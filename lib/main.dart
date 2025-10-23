@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:zbeub_task_plan/theme/app_theme.dart';
 import 'package:zbeub_task_plan/ui/home_page/home_page.dart';
+import 'package:zbeub_task_plan/data/tasks.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => TasksProvider(),
+      child:const MyApp()
+    )
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -13,10 +21,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Ton planner perso hihi',
-      theme: ThemeData(
-
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 190, 250, 203)),
-      ),
+      theme: AppTheme.lightTheme,
       home: const MyHomePage(title: 'Home Page'),
     );
   }

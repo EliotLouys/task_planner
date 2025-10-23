@@ -8,7 +8,9 @@ class Tasks {
   final String description;
   final DateTime dueDate;
   final bool isCompleted;
-  final TasksCategories category; 
+  final TasksCategories category;
+  final ImportanceLevel isImportant; 
+  final UrgencyLevel isUrgent; 
 
   Tasks({
     required this.title,
@@ -16,6 +18,8 @@ class Tasks {
     required this.dueDate,
     this.isCompleted = false,
     required this.category,
+    required this.isImportant,
+    required this.isUrgent,
   });
 
   Map<String, dynamic> toJson() {
@@ -25,6 +29,8 @@ class Tasks {
       'dueDate': dueDate.toIso8601String(),
       'isCompleted': isCompleted,
       'category': category,
+      'isImportant': isImportant,
+      'isUrgent': isUrgent,
     };
   }
 
@@ -35,6 +41,8 @@ class Tasks {
       dueDate: DateTime.parse(json['dueDate']),
       isCompleted: json['isCompleted'],
       category: json['category'],
+      isImportant: json['isImportant'],
+      isUrgent: json['isUrgent'],
     );
   }
 
@@ -65,6 +73,8 @@ class TasksProvider extends ChangeNotifier{
         dueDate: task.dueDate,
         isCompleted: !task.isCompleted,
         category: task.category,
+        isImportant: task.isImportant,
+        isUrgent: task.isUrgent,
       );
       notifyListeners();
     }

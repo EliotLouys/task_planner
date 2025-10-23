@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'package:zbeub_task_plan/data/enums.dart';
+import 'package:zbeub_task_plan/ui/task_page/task_page.dart';
 
 class SelectionPage extends StatefulWidget{
 
@@ -74,7 +75,6 @@ class _SelectionPageState extends State<SelectionPage>{
     return Scaffold(
       appBar: AppBar(
         title: Text('Classes des ${widget.title}'),
-        backgroundColor:  Theme.of(context).colorScheme.inversePrimary,
       ),
       // GridView fills the remaining screen space
       body: GridView.count(
@@ -88,8 +88,14 @@ class _SelectionPageState extends State<SelectionPage>{
             subtitle: 'Urgent',
             color: const Color.fromARGB(255, 229, 30, 30),
             onTap: () {
-              debugPrint('Card 1 Tapped!');
-              // Add navigation or action here
+              Navigator.push(
+                context,
+                TaskPage.route(
+                  widget.title,
+                  ImportanceLevel.important,
+                  UrgencyLevel.urgent,
+                ),
+              );
             },
           ),
           
@@ -99,8 +105,14 @@ class _SelectionPageState extends State<SelectionPage>{
             subtitle: 'Pas urgent',
             color: const Color.fromARGB(255, 146, 160, 67),
             onTap: () {
-              debugPrint('Card 2 Tapped!');
-              // Add navigation or action here
+              Navigator.push(
+                context,
+                TaskPage.route(
+                  widget.title,
+                  ImportanceLevel.important,
+                  UrgencyLevel.notUrgent,
+                ),
+              );
             },
           ),
           
@@ -110,8 +122,14 @@ class _SelectionPageState extends State<SelectionPage>{
             subtitle: 'Urgent',
             color: Colors.orange.shade600,
             onTap: () {
-              debugPrint('Card 3 Tapped!');
-              // Add navigation or action here
+              Navigator.push(
+                context,
+                TaskPage.route(
+                  widget.title,
+                  ImportanceLevel.notImportant,
+                  UrgencyLevel.urgent,
+                ),
+              );
             },
           ),
           
@@ -121,8 +139,14 @@ class _SelectionPageState extends State<SelectionPage>{
             subtitle: 'Pas urgent',
             color: const Color.fromARGB(255, 53, 229, 76),
             onTap: () {
-              debugPrint('Card 4 Tapped!');
-              // Add navigation or action here
+              Navigator.push(
+                context,
+                TaskPage.route(
+                  widget.title,
+                  ImportanceLevel.notImportant,
+                  UrgencyLevel.notUrgent,
+                ),
+              );
             },
           ),
         ],
