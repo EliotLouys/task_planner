@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
       title: 'Ton planner perso hihi',
       theme: ThemeData(
 
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 190, 250, 203)),
       ),
       home: const MyHomePage(title: 'Home Page'),
     );
