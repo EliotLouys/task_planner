@@ -106,20 +106,7 @@ class _TaskFormModalState extends State<TaskFormModal> {
     super.dispose();
   }
 
-  // Handles displaying the Date Picker
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2030),
-    );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
-  }
+
 
   // Handles form submission
   void _submitForm() {
