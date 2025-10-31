@@ -11,9 +11,9 @@ class AppTheme {
       // The ColorScheme derives all color roles (secondary, tertiary, background, etc.) 
       // from a single seed color, ensuring harmony.
       colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color.fromARGB(255, 162, 235, 184),
-        primary: const Color.fromARGB(255, 142, 236, 205),
-        secondary: const Color.fromARGB(255, 120, 240, 7),
+        seedColor: const Color.fromARGB(255, 67, 22, 172),
+        primary: const Color.fromARGB(255, 183, 142, 236),
+        secondary: const Color.fromARGB(255, 218, 3, 56),
         surface: Colors.white,
       ),
       useMaterial3: true,

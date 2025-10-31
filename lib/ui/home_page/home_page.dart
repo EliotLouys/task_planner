@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zbeub_task_plan/ui/selection_page/selection_page.dart';
-
-
-
+import 'package:zbeub_task_plan/ui/task_page/all_task_page.dart';
+import 'package:zbeub_task_plan/ui/task_page/today_task_page.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -28,26 +27,47 @@ class _MyHomePageState extends State<MyHomePage> {
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // --- First Button: Tâches pros ---
-            // Sizing/Style is now handled by ElevatedButtonThemeData
+            // --- First Button: Tâches pros (New Color) ---
             ElevatedButton(
               onPressed: () {
-                Navigator.push(context,SelectionPage.route('tâches pro'),);
+                Navigator.push(context, SelectionPage.route('tâches pro'),);
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 30, 100, 190), // Professional color (Blue)
+                foregroundColor: Colors.white,
+              ),
               child: const Text(
                 'Tâches pros',
                 textAlign: TextAlign.center,
               ),
             ),
             const SizedBox(height: 20), // Espacement entre les boutons
-            // --- Second Button: Tâches persos ---
-            // Sizing/Style is now handled by ElevatedButtonThemeData
+            
+            // --- Second Button: Tâches persos (New Color) ---
             ElevatedButton(
               onPressed: () {
-                Navigator.push(context,SelectionPage.route('tâches persos'),);
+                Navigator.push(context, SelectionPage.route('tâches persos'),);
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 190, 30, 100), // Personal color (Red/Pink)
+                foregroundColor: Colors.white,
+              ),
               child: const Text(
                 'Tâches persos',
+                textAlign: TextAlign.center,
+              ),
+            ),
+
+            const SizedBox(height: 40), // More spacing for the third button
+
+            // --- Third Button: Today's Tasks ---
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(context, TodayTasksPage.route(),); // Navigation to the new page
+              },
+              // This button uses the default ElevatedButton theme defined in AppTheme
+              child: const Text(
+                "Tâches pour Aujourd'hui",
                 textAlign: TextAlign.center,
               ),
             ),

@@ -1,9 +1,16 @@
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:zbeub_task_plan/data/enums.dart';
+import 'package:uuid/uuid.dart';
+import 'package:zbeub_task_plan/data/today_tasks.dart';
+
+final _uuid =const Uuid();
 
 class Tasks {
+  final String id;
   final String title;
   final String description;
   final DateTime dueDate;
@@ -13,6 +20,7 @@ class Tasks {
   final UrgencyLevel isUrgent; 
 
   Tasks({
+    String? id,
     required this.title,
     required this.description,
     required this.dueDate,
@@ -20,35 +28,74 @@ class Tasks {
     required this.category,
     required this.isImportant,
     required this.isUrgent,
-  });
+  }): id = id ?? _uuid.v4();
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id, // Include ID in serialization
       'title': title,
       'description': description,
       'dueDate': dueDate.toIso8601String(),
       'isCompleted': isCompleted,
-      'category': category,
-      'isImportant': isImportant,
-      'isUrgent': isUrgent,
+      'category': category.name, 
+      'isImportant': isImportant.name,
+      'isUrgent': isUrgent.name,
     };
   }
 
   factory Tasks.fromJson(Map<String, dynamic> json) {
+    // Helper to parse enum from string name, defaulting to first value if not found
+    TasksCategories parseCategory(String name) => TasksCategories.values.firstWhere(
+        (e) => e.name == name,
+        orElse: () => TasksCategories.personal);
+    ImportanceLevel parseImportance(String name) => ImportanceLevel.values.firstWhere(
+        (e) => e.name == name,
+        orElse: () => ImportanceLevel.notImportant);
+    UrgencyLevel parseUrgency(String name) => UrgencyLevel.values.firstWhere(
+        (e) => e.name == name,
+        orElse: () => UrgencyLevel.notUrgent);
+        
     return Tasks(
+      id: json['id'] as String,
       title: json['title'],
       description: json['description'],
       dueDate: DateTime.parse(json['dueDate']),
-      isCompleted: json['isCompleted'],
-      category: json['category'],
-      isImportant: json['isImportant'],
-      isUrgent: json['isUrgent'],
+      isCompleted: json['isCompleted'] as bool,
+      // Correctly retrieve enum from string name
+      category: parseCategory(json['category'] as String),
+      isImportant: parseImportance(json['isImportant'] as String),
+      isUrgent: parseUrgency(json['isUrgent'] as String),
     );
   }
 
+  // Override equality for proper usage in List.indexOf to enable toggleTaskCompletion
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Tasks &&
+          runtimeType == other.runtimeType &&
+          title == other.title &&
+          description == other.description &&
+          dueDate == other.dueDate &&
+          category == other.category &&
+          isImportant == other.isImportant &&
+          isUrgent == other.isUrgent;
+
+  @override
+  int get hashCode => title.hashCode ^ description.hashCode ^ dueDate.hashCode ^ category.hashCode ^ isImportant.hashCode ^ isUrgent.hashCode;
+
+
 }
 
+
 class TasksProvider extends ChangeNotifier{
+  // Dependency injection for TodayTasksProvider, set in main.dart
+  TodayTasksProvider? _todayTasksProvider;
+
+  void setTodayTasksProvider(TodayTasksProvider provider) {
+    _todayTasksProvider = provider;
+  }
+  
   final List<Tasks> _tasks = [];
   final _storage = FlutterSecureStorage();
 
@@ -56,40 +103,58 @@ class TasksProvider extends ChangeNotifier{
 
   void addTask(Tasks task) {
     _tasks.add(task);
+    saveTasks();
     notifyListeners();
   }
 
   void removeTask(Tasks task) {
-    _tasks.remove(task);
+    _tasks.removeWhere((t) => t.id == task.id); // Remove by ID
+    _todayTasksProvider?.removeDeletedTask(task); // Notify today's list
+    saveTasks();
     notifyListeners();
   }
 
   void toggleTaskCompletion(Tasks task) {
-    final index = _tasks.indexOf(task);
+    final index = _tasks.indexWhere((t) => t.id == task.id); // Find by ID
+    print(index);
+
     if (index != -1) {
-      _tasks[index] = Tasks(
-        title: task.title,
-        description: task.description,
-        dueDate: task.dueDate,
-        isCompleted: !task.isCompleted,
-        category: task.category,
-        isImportant: task.isImportant,
-        isUrgent: task.isUrgent,
+      final oldTask = _tasks[index];
+      final newTask = Tasks(
+        id: oldTask.id, // Preserve ID
+        title: oldTask.title,
+        description: oldTask.description,
+        dueDate: oldTask.dueDate,
+        isCompleted: !oldTask.isCompleted, // Toggle
+        category: oldTask.category,
+        isImportant: oldTask.isImportant,
+        isUrgent: oldTask.isUrgent,
       );
+      _tasks[index] = newTask; // Replace old instance with new one
+
+      // Notify today's list of the change in state (isCompleted)
+      _todayTasksProvider?.updateTask(oldTask, newTask);
+
+      saveTasks();
       notifyListeners();
     }
   }
 
   Future<void> saveTasks() async {
-    await _storage.write(key: 'tasks', value: _tasks.map((t) => t.toJson()).toList().toString()); 
+    // Serialize the list of tasks to a proper JSON string
+    final tasksJsonList = _tasks.map((t) => t.toJson()).toList();
+    final tasksString = jsonEncode(tasksJsonList); 
+    await _storage.write(key: 'tasks', value: tasksString); 
   }
 
   Future<void> loadTasks() async {
     final tasksString = await _storage.read(key: 'tasks');
     if (tasksString != null) {
-      final List<dynamic> tasksJson = tasksString as List<dynamic>;
+      // Deserialize the JSON string back into a List<Map<String, dynamic>>
+      final List<dynamic> tasksJson = jsonDecode(tasksString) as List<dynamic>;
       _tasks.clear();
-      _tasks.addAll(tasksJson.map((json) => Tasks.fromJson(json)).toList());
+      // Map the list of dynamic objects (maps) to Task objects
+      _tasks.addAll(tasksJson.map((json) => Tasks.fromJson(json as Map<String, dynamic>)).toList());
       notifyListeners();
     }
   }

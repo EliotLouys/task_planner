@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zbeub_task_plan/data/enums.dart';
 import 'package:zbeub_task_plan/ui/task_page/task_page.dart';
+import 'package:zbeub_task_plan/ui/task_page/all_task_page.dart';
 
 class SelectionPage extends StatefulWidget{
 
@@ -90,7 +91,8 @@ class _SelectionPageState extends State<SelectionPage>{
             onTap: () {
               Navigator.push(
                 context,
-                TaskPage.route(
+                // Updated navigation to new list page
+                AllTasksPage.route(
                   widget.title,
                   ImportanceLevel.important,
                   UrgencyLevel.urgent,
@@ -107,7 +109,8 @@ class _SelectionPageState extends State<SelectionPage>{
             onTap: () {
               Navigator.push(
                 context,
-                TaskPage.route(
+                // Updated navigation to new list page
+                AllTasksPage.route(
                   widget.title,
                   ImportanceLevel.important,
                   UrgencyLevel.notUrgent,
@@ -124,7 +127,8 @@ class _SelectionPageState extends State<SelectionPage>{
             onTap: () {
               Navigator.push(
                 context,
-                TaskPage.route(
+                // Updated navigation to new list page
+                AllTasksPage.route(
                   widget.title,
                   ImportanceLevel.notImportant,
                   UrgencyLevel.urgent,
@@ -141,7 +145,8 @@ class _SelectionPageState extends State<SelectionPage>{
             onTap: () {
               Navigator.push(
                 context,
-                TaskPage.route(
+                // Updated navigation to new list page
+                  AllTasksPage.route(
                   widget.title,
                   ImportanceLevel.notImportant,
                   UrgencyLevel.notUrgent,

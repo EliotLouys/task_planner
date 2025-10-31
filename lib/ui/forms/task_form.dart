@@ -53,6 +53,43 @@ class _TaskFormModalState extends State<TaskFormModal> {
   late ImportanceLevel _selectedImportance;
   late TasksCategories _selectedCategory;
 
+  Future<void> _selectDateAndTime(BuildContext context) async {
+    // 1. Pick Date
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2030),
+    );
+
+    if (pickedDate == null) return;
+
+    // 2. Pick Time (only if a date was picked)
+    // Use the time component of the current _selectedDate as initial time
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_selectedDate),
+    );
+
+    if (pickedTime != null) {
+      setState(() {
+        // Combine the date and the selected time
+        _selectedDate = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        );
+      });
+    } else {
+      // If time is not picked, set time to 00:00 or current time
+       setState(() {
+        _selectedDate = pickedDate;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -160,7 +197,7 @@ class _TaskFormModalState extends State<TaskFormModal> {
                 ListTile(
                   title: Text('Échéance: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}'),
                   trailing: const Icon(Icons.calendar_today),
-                  onTap: () => _selectDate(context),
+                  onTap: () => _selectDateAndTime(context),
                   contentPadding: EdgeInsets.zero,
                 ),
                 const SizedBox(height: 12),

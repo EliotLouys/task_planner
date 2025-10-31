@@ -89,8 +89,7 @@ class TaskPage extends StatelessWidget {
                     ),
                   ),
                   subtitle: Text(
-                    'Échéance: ${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year}',
-                  ),
+                    'Échéance: ${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year} à ${task.dueDate.hour.toString().padLeft(2, '0')}:${task.dueDate.minute.toString().padLeft(2, '0')}',                  ),
                   trailing: Checkbox(
                     value: task.isCompleted,
                     onChanged: (_) {
