@@ -9,13 +9,17 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   final tasksProvider = TasksProvider();
-  final todayTasksProvider = TodayTasksProvider(); // Initialize new provider
+  final todayTasksProvider = TodayTasksProvider();
 
-  // Establish link between providers
+  // 1. Establish the links between providers
   tasksProvider.setTodayTasksProvider(todayTasksProvider); 
+  todayTasksProvider.setTasksProvider(tasksProvider); // New link for loading
 
-  await tasksProvider.loadTasks(); // Load tasks on startup
+  // 2. Load Main Tasks first
+  await tasksProvider.loadTasks(); 
 
+  // 3. Load Today's Tasks (which depends on the main task list)
+  await todayTasksProvider.loadTasksForToday();
   runApp(
     MultiProvider(
       providers: [

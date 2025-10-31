@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zbeub_task_plan/data/enums.dart';
 import 'package:zbeub_task_plan/ui/task_page/all_task_page.dart';
+import 'package:zbeub_task_plan/theme/app_theme.dart';
 
 class SelectionPage extends StatefulWidget{
 
@@ -84,9 +85,9 @@ class _SelectionPageState extends State<SelectionPage>{
         children: <Widget>[
           // --- Card 1 ---
           _buildClickableCard(
-            title: 'Important',
-            subtitle: 'Urgent',
-            color: const Color.fromARGB(255, 229, 30, 30),
+            subtitle: 'Important',
+            title: 'Urgent',
+            color: AppTheme.urgentImportantColor,
             onTap: () {
               Navigator.push(
                 context,
@@ -100,29 +101,13 @@ class _SelectionPageState extends State<SelectionPage>{
             },
           ),
           
-          // --- Card 2 ---
-          _buildClickableCard(
-            title: 'Important',
-            subtitle: 'Pas urgent',
-            color: const Color.fromARGB(255, 146, 160, 67),
-            onTap: () {
-              Navigator.push(
-                context,
-                // Updated navigation to new list page
-                AllTasksPage.route(
-                  widget.title,
-                  ImportanceLevel.important,
-                  UrgencyLevel.notUrgent,
-                ),
-              );
-            },
-          ),
+
           
           // --- Card 3 ---
           _buildClickableCard(
-            title: 'Pas important',
-            subtitle: 'Urgent',
-            color: Colors.orange.shade600,
+            subtitle: 'Pas important',
+            title: 'Urgent',
+            color: AppTheme.urgentNotImportantColor,
             onTap: () {
               Navigator.push(
                 context,
@@ -136,11 +121,28 @@ class _SelectionPageState extends State<SelectionPage>{
             },
           ),
           
+                    // --- Card 2 ---
+          _buildClickableCard(
+            subtitle: 'Important',
+            title: 'Pas urgent',
+            color: AppTheme.importantNotUrgentColor,
+            onTap: () {
+              Navigator.push(
+                context,
+                // Updated navigation to new list page
+                AllTasksPage.route(
+                  widget.title,
+                  ImportanceLevel.important,
+                  UrgencyLevel.notUrgent,
+                ),
+              );
+            },
+          ),
           // --- Card 4 ---
           _buildClickableCard(
-            title: 'Pas important',
-            subtitle: 'Pas urgent',
-            color: const Color.fromARGB(255, 53, 229, 76),
+            subtitle: 'Pas important',
+            title: 'Pas urgent',
+            color: AppTheme.notUrgentNotImportantColor,
             onTap: () {
               Navigator.push(
                 context,

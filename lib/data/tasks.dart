@@ -96,6 +96,15 @@ class TasksProvider extends ChangeNotifier{
     _todayTasksProvider = provider;
   }
   
+  Tasks? getTaskById(String id) {
+    try {
+      return _tasks.firstWhere((t) => t.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  
   final List<Tasks> _tasks = [];
   final _storage = FlutterSecureStorage();
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zbeub_task_plan/theme/app_theme.dart';
 import 'package:zbeub_task_plan/ui/selection_page/selection_page.dart';
 import 'package:zbeub_task_plan/ui/task_page/today_task_page.dart';
 
@@ -32,7 +33,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 Navigator.push(context, SelectionPage.route('tâches pro'),);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 30, 100, 190), // Professional color (Blue)
+                backgroundColor: AppTheme.professionalCategoryColor, // Professional color (Blue)
                 foregroundColor: Colors.white,
               ),
               child: const Text(
@@ -48,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 Navigator.push(context, SelectionPage.route('tâches persos'),);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 190, 30, 100), // Personal color (Red/Pink)
+                backgroundColor: AppTheme.personalCategoryColor, // Personal color (Red/Pink)
                 foregroundColor: Colors.white,
               ),
               child: const Text(

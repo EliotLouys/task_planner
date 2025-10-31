@@ -1,10 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:zbeub_task_plan/data/enums.dart';
 
 class AppTheme {
   // 1. Define core colors and constants
   // This is your main brand color
   static const Color primarySeedColor = Color.fromARGB(255, 30, 150, 190);
   static const double cardBorderRadius = 12.0;
+  
+  static const Color urgentImportantColor = Color.fromARGB(255, 229, 30, 30); 
+  static const Color importantNotUrgentColor = Color.fromARGB(255, 250, 234, 16);
+  // Note: Colors.orange.shade600 corresponds to ARGB(255, 255, 140, 0)
+  static const Color urgentNotImportantColor =Color.fromARGB(255, 251, 140, 0); 
+  static const Color notUrgentNotImportantColor = Color.fromARGB(255, 132, 240, 146);
+
+  static const Color professionalCategoryColor = Color.fromARGB(255, 30, 100, 190);
+  static const Color personalCategoryColor = Color.fromARGB(255, 190, 30, 100);
+
+  static Color getQuadrantColor({
+      required ImportanceLevel importance,
+      required UrgencyLevel urgency,
+    }) {
+      if (importance == ImportanceLevel.important && urgency == UrgencyLevel.urgent) {
+        return urgentImportantColor;
+      } else if (importance == ImportanceLevel.important && urgency == UrgencyLevel.notUrgent) {
+        return importantNotUrgentColor;
+      } else if (importance == ImportanceLevel.notImportant && urgency == UrgencyLevel.urgent) {
+        return urgentNotImportantColor;
+      } else { // Implicitly: Not Important and Not Urgent
+        return notUrgentNotImportantColor;
+      }
+    }
+  
+  static Color getCategoryColor(TasksCategories category) {
+    switch (category) {
+      case TasksCategories.professional:
+        return professionalCategoryColor;
+      case TasksCategories.personal:
+        return personalCategoryColor;
+    }
+  }
 
   static ThemeData get lightTheme {
     final baseTheme = ThemeData(
