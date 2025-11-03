@@ -42,14 +42,14 @@ class TodayTasksPage extends StatelessWidget {
               final categoryColor = AppTheme.getCategoryColor(task.category);
 
               return Card(
-                // REQUIRED: ReorderableListView items must have a unique key
                 key: ValueKey(task.id), 
                 elevation: 1,
                 margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 color: AppTheme.getQuadrantColor(importance: task.isImportant, urgency: task.isUrgent),
                 child: IntrinsicHeight(
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                    
+                    crossAxisAlignment: CrossAxisAlignment.stretch, 
                     children: [
                       // Category color strip
                       Container(
@@ -62,59 +62,66 @@ class TodayTasksPage extends StatelessWidget {
                       ),
                       
                       Expanded(
-                        child: ListTile(
-                          isThreeLine: true, // Required flag to allow three vertical lines of content
-                          // FIX 1: Use the dedicated title property
-                          title: Text(
-                            task.title,
-                            maxLines: 1, // Ensure title respects space
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              decoration: task.isCompleted
-                                  ? TextDecoration.lineThrough
-                                  : TextDecoration.none,
+                        
+                        child: ReorderableDragStartListener(
+                          index: index, // Pass the current list index
+                          child: ListTile(
+                            isThreeLine: true, 
+                            title: Text(
+                              task.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                decoration: task.isCompleted
+                                    ? TextDecoration.lineThrough
+                                    : TextDecoration.none,
+                              ),
                             ),
+                            subtitle: Text(
+                              'Échéance: ${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year} à ${task.dueDate.hour.toString().padLeft(2, '0')}:${task.dueDate.minute.toString().padLeft(2, '0')}',
+                              maxLines: 1, 
+                              overflow: TextOverflow.ellipsis, 
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                // ADDED: The visible drag indicator icon
+                                const Icon(Icons.drag_indicator, color: Colors.grey),
+
+                                // Delete Button
+                                IconButton(
+                                  icon: const Icon(Icons.delete_forever, color: Colors.grey),
+                                  onPressed: () => tasksProvider.removeTask(task),
+                                ),
+                                // Remove from Today's List button
+                                IconButton(
+                                  icon: const Icon(Icons.remove_circle, color: Colors.red),
+                                  onPressed: () {
+                                    todayTasksProvider.removeTaskFromToday(task);
+                                  },
+                                ),
+                                // Checkbox for completion status (updates main task list)
+                                Checkbox(
+                                  value: task.isCompleted,
+                                  onChanged: (_) {
+                                    tasksProvider.toggleTaskCompletion(task);
+                                  },
+                                ),
+                              ],
+                            ),
+                            onTap: () {
+                              showTaskFormModal(
+                                context,
+                                initialCategory: task.category,
+                                initialImportanceString: task.isImportant,
+                                initialUrgencyString: task.isUrgent,
+                                taskToEdit: task,
+                              );
+                            },
                           ),
-                          // FIX 2: Use the dedicated subtitle property
-                          subtitle: Text(
-                            'Échéance: ${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year} à ${task.dueDate.hour.toString().padLeft(2, '0')}:${task.dueDate.minute.toString().padLeft(2, '0')}',
-                            maxLines: 2, // Ensures subtitle respects space
-                            overflow: TextOverflow.ellipsis, 
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Delete Button
-                              IconButton(
-                                icon: const Icon(Icons.delete_forever, color: Colors.grey),
-                                onPressed: () => tasksProvider.removeTask(task),
-                              ),
-                              // Remove from Today's List button
-                              IconButton(
-                                icon: const Icon(Icons.remove_circle, color: Colors.red),
-                                onPressed: () {
-                                  todayTasksProvider.removeTaskFromToday(task);
-                                },
-                              ),
-                              // Checkbox for completion status (updates main task list)
-                              Checkbox(
-                                value: task.isCompleted,
-                                onChanged: (_) {
-                                  tasksProvider.toggleTaskCompletion(task);
-                                },
-                              ),
-                            ],
-                          ),
-                          onTap: () {
-                            showTaskFormModal(
-                              context,
-                              initialCategory: task.category,
-                              initialImportanceString: task.isImportant,
-                              initialUrgencyString: task.isUrgent,
-                              taskToEdit: task,
-                            );
-                          },
                         ),
                       ),
                     ],
