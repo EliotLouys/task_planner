@@ -57,7 +57,7 @@ class ArchivePage extends StatelessWidget {
                         child: ListTile(
                           // REMOVED: isThreeLine: true
                           // FIX: Use the 'content' slot to wrap text elements in Expanded
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
                           title: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
@@ -74,8 +74,8 @@ class ArchivePage extends StatelessWidget {
                                 ),
                                 // Subtitle - Enforce 2 line limit with ellipsis
                                 Text(
-                                  'Archivé. Échéance: ${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year} à ${task.dueDate.hour.toString().padLeft(2, '0')}:${task.dueDate.minute.toString().padLeft(2, '0')}',
-                                  maxLines: 2, 
+                                  'Archivé. Échéance: ${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year}',
+                                  maxLines: 1, 
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(color: Colors.black45, fontSize: 14),
                                 ),

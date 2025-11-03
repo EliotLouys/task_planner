@@ -76,8 +76,8 @@ class TodayTasksPage extends StatelessWidget {
                               ),
                               // Subtitle - Enforce 2 line limit with ellipsis
                               Text(
-                                'Échéance: ${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year} à ${task.dueDate.hour.toString().padLeft(2, '0')}:${task.dueDate.minute.toString().padLeft(2, '0')}',
-                                maxLines: 2,
+                                'Échéance: ${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year}',
+                                maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(fontSize: 14),
                               ),
