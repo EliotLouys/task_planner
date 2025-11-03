@@ -37,6 +37,22 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+    applicationVariants.configureEach {
+    if (name == "release") {
+        // 'project.name' defaults to 'app'
+        val appName = "app" 
+        val versionName = defaultConfig.versionName
+        val versionCode = defaultConfig.versionCode
+        
+        outputs.configureEach {
+            // Set the output file name to include version name and code
+            // Example: app-release-1.0.0-1.apk
+            outputFileName.set("$appName-release-$versionName-$versionCode.apk")
+        }
+    }
+}
+
 }
 
 flutter {
