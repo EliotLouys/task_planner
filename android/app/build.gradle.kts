@@ -8,11 +8,13 @@ plugins {
 android {
     namespace = "com.example.zbeub_task_plan"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973"
+    ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        // FIX 1: Enable Core Library Desugaring
+        isCoreLibraryDesugaringEnabled = true 
     }
 
     kotlinOptions {
@@ -37,6 +39,14 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+
+}
+
+// FIX 2: Add the desugaring dependency block
+dependencies {
+    // This is the dependency required by flutter_local_notifications for Java 8 features
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }
 
 flutter {

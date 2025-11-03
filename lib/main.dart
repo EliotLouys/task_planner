@@ -4,6 +4,7 @@ import 'package:zbeub_task_plan/theme/app_theme.dart';
 import 'package:zbeub_task_plan/ui/home_page/home_page.dart';
 import 'package:zbeub_task_plan/data/tasks.dart';
 import 'package:zbeub_task_plan/data/today_tasks.dart'; // Import new provider
+import 'package:zbeub_task_plan/notification.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +21,15 @@ void main() async {
 
   // 3. Load Today's Tasks (which depends on the main task list)
   await todayTasksProvider.loadTasksForToday();
+
+  notificationService.scheduleDailyNotification(
+    id : 0, // Notification ID
+    title: 'Bonsoir la zone',
+    body: 'Ca va ?',
+
+    time: const TimeOfDay(hour: 19, minute: 56),
+    ); 
+
   runApp(
     MultiProvider(
       providers: [
