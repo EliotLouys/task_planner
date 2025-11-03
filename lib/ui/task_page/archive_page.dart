@@ -40,7 +40,6 @@ class ArchivePage extends StatelessWidget {
                 elevation: 1,
                 margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 
-                // FIX: Wrap the Row in IntrinsicHeight to resolve the layout conflict on web
                 child: IntrinsicHeight( 
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.stretch, 
@@ -67,21 +66,19 @@ class ArchivePage extends StatelessWidget {
                           subtitle: Text(
                             'Archivé. Échéance: ${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year} à ${task.dueDate.hour.toString().padLeft(2, '0')}:${task.dueDate.minute.toString().padLeft(2, '0')}',
                             style: const TextStyle(color: Colors.black45),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              // Delete Button
                               IconButton(
                                 icon: const Icon(Icons.delete_forever, color: AppTheme.deleteButtonColor),
                                 onPressed: () => tasksProvider.removeTask(task),
                               ),
-                              
-                              // Unarchive (Toggle Completion) Button
                               IconButton(
                                 icon: const Icon(Icons.unarchive, color: AppTheme.unarchiveButtonColor),
                                 onPressed: () {
-                                  // Toggle completion to unarchive
                                   tasksProvider.toggleTaskCompletion(task);
                                 },
                               ),
