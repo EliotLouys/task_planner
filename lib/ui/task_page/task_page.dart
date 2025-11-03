@@ -98,8 +98,7 @@ class TaskPage extends StatelessWidget {
                     },
                   ),
                   onTap: () {
-                    // TODO: Navigate to a task detail/edit screen
-                    debugPrint('Tapped on task: ${task.title}');
+                    // debugPrint('Tapped on task: ${task.title}');
                   },
                 ),
               );

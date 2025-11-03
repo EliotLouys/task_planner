@@ -31,54 +31,64 @@ class TodayTasksPage extends StatelessWidget {
             );
           }
 
-          return ListView.builder(
+         return ListView.builder(
             itemCount: tasks.length,
             itemBuilder: (context, index) {
               final task = tasks[index];
-              
-              // Only retrieving category color, as the quadrant color is no longer used for the tint
               final categoryColor = AppTheme.getCategoryColor(task.category);
-
+              final matrixColor = AppTheme.getQuadrantColor(
+                importance: task.isImportant,
+                urgency: task.isUrgent,
+              );
               return Card(
                 elevation: 1,
                 margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                color: AppTheme.getQuadrantColor(importance: task.isImportant, urgency: task.isUrgent),
-                child: 
-                  Row( // Use Row to place the color bar next to the content
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                color: matrixColor,
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch, 
                     children: [
-                      // 1. Thin vertical rectangle for category color (The strip)
+                      // Category color strip
                       Container(
-                        width: 8, // Thin width
-                        height: double.infinity , 
+                        width: 8, 
+                        height: double.infinity, 
                         decoration: BoxDecoration(
-                          color: categoryColor, // This is the category color (Personal/Professional)
+                          color: categoryColor,
                           borderRadius: const BorderRadius.horizontal(left: Radius.circular(AppTheme.cardBorderRadius)),
                         ),
                       ),
                       
-                      // 2. Task Content (Expanded to fill remaining space)
                       Expanded(
                         child: ListTile(
-                          isThreeLine: true,
-                          title: Text(
-                            task.title,
-                            style: TextStyle(
-                              decoration: task.isCompleted
-                                  ? TextDecoration.lineThrough
-                                  : TextDecoration.none,
-                            ),
-                          ),
-                          subtitle: Text(
-                            'Échéance: ${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year} à ${task.dueDate.hour.toString().padLeft(2, '0')}:${task.dueDate.minute.toString().padLeft(2, '0')}',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          title: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Title - Enforce 1 line limit with ellipsis
+                              Text(
+                                task.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  decoration: task.isCompleted ? TextDecoration.lineThrough : TextDecoration.none,
+                                ),
+                              ),
+                              // Subtitle - Enforce 2 line limit with ellipsis
+                              Text(
+                                'Échéance: ${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year} à ${task.dueDate.hour.toString().padLeft(2, '0')}:${task.dueDate.minute.toString().padLeft(2, '0')}',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                            ]
                           ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              // Delete Button
                               IconButton(
-                                icon: const Icon(Icons.delete_forever, color: AppTheme.deleteButtonColor),
+                                icon: const Icon(Icons.delete_forever, color: Colors.grey),
                                 onPressed: () => tasksProvider.removeTask(task),
                               ),
                               // Remove from Today's List button
@@ -98,20 +108,20 @@ class TodayTasksPage extends StatelessWidget {
                             ],
                           ),
                           onTap: () {
-                            debugPrint('Tapped on task for today: ${task.title}');
                             showTaskFormModal(
                               context,
                               initialCategory: task.category,
                               initialImportanceString: task.isImportant,
                               initialUrgencyString: task.isUrgent,
-                              taskToEdit: task, // Pass the existing task
+                              taskToEdit: task,
                             );
                           },
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
                   ),
-                );
+                ),
+              );
             },
           );
         },
