@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zbeub_task_plan/theme/app_theme.dart';
 import 'package:zbeub_task_plan/ui/selection_page/selection_page.dart';
+import 'package:zbeub_task_plan/ui/task_page/archive_page.dart';
 import 'package:zbeub_task_plan/ui/task_page/today_task_page.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -71,6 +72,19 @@ class _MyHomePageState extends State<MyHomePage> {
                 textAlign: TextAlign.center,
               ),
             ),
+            
+            const SizedBox(height: 40), // More spacing for the third button
+
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(context, ArchivePage.route(),); // Navigation to Archive Page
+              },
+              child: const Text(
+                "Archives",
+                textAlign: TextAlign.center,
+              ),
+            ),
+            
           ],
         )
       ),

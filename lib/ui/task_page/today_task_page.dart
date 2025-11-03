@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:zbeub_task_plan/data/today_tasks.dart';
 import 'package:zbeub_task_plan/data/tasks.dart';
 import 'package:zbeub_task_plan/theme/app_theme.dart';
+import 'package:zbeub_task_plan/ui/forms/task_form.dart';
 
 class TodayTasksPage extends StatelessWidget {
   const TodayTasksPage({super.key});
@@ -73,6 +74,10 @@ class TodayTasksPage extends StatelessWidget {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            IconButton(
+                              icon: const Icon(Icons.delete_forever, color: AppTheme.deleteButtonColor),
+                              onPressed: () => tasksProvider.removeTask(task),
+                            ),
                             // Remove from Today's List button
                             IconButton(
                               icon: const Icon(Icons.remove_circle, color: Colors.red),
@@ -91,6 +96,13 @@ class TodayTasksPage extends StatelessWidget {
                         ),
                         onTap: () {
                           debugPrint('Tapped on task for today: ${task.title}');
+                          showTaskFormModal(
+                            context,
+                            initialCategory: task.category,
+                            initialImportanceString: task.isImportant,
+                            initialUrgencyString: task.isUrgent,
+                            taskToEdit: task, // Pass the existing task
+                          );
                         },
                       ),
                     ),

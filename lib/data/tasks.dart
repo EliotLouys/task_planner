@@ -108,7 +108,14 @@ class TasksProvider extends ChangeNotifier{
   final List<Tasks> _tasks = [];
   final _storage = FlutterSecureStorage();
 
-  List<Tasks> get tasks => List.unmodifiable(_tasks);
+  /// Returns an unmodifiable list of all tasks that are NOT completed.
+  List<Tasks> get tasks => List.unmodifiable(_tasks.where((t) => !t.isCompleted));
+  
+  /// Returns an unmodifiable list of all tasks that ARE completed (the archive).
+  List<Tasks> get archivedTasks => List.unmodifiable(_tasks.where((t) => t.isCompleted));
+  
+  /// Returns an unmodifiable list of ALL tasks (active and archived).
+  List<Tasks> get allTasks => List.unmodifiable(_tasks);
 
   void addTask(Tasks task) {
     _tasks.add(task);
@@ -123,26 +130,47 @@ class TasksProvider extends ChangeNotifier{
     notifyListeners();
   }
 
-  void toggleTaskCompletion(Tasks task) {
-    final index = _tasks.indexWhere((t) => t.id == task.id); // Find by ID
-    print(index);
+  void updateTask(Tasks updatedTask) {
+    final index = _tasks.indexWhere((t) => t.id == updatedTask.id);
+    
+    if (index != -1) {
+      final oldTask = _tasks[index];
+      _tasks[index] = updatedTask;
 
+      // Notify today's list of the change (needed for title/date/etc. edits)
+      _todayTasksProvider?.updateTask(oldTask, updatedTask);
+
+      saveTasks();
+      notifyListeners();
+    }
+  }
+
+
+  void toggleTaskCompletion(Tasks task) {
+    final index = _tasks.indexWhere((t) => t.id == task.id);
+    
     if (index != -1) {
       final oldTask = _tasks[index];
       final newTask = Tasks(
-        id: oldTask.id, // Preserve ID
+        id: oldTask.id,
         title: oldTask.title,
         description: oldTask.description,
         dueDate: oldTask.dueDate,
-        isCompleted: !oldTask.isCompleted, // Toggle
+        isCompleted: !oldTask.isCompleted, // Toggle completion (Archive/Unarchive)
         category: oldTask.category,
         isImportant: oldTask.isImportant,
         isUrgent: oldTask.isUrgent,
       );
-      _tasks[index] = newTask; // Replace old instance with new one
+      _tasks[index] = newTask;
 
-      // Notify today's list of the change in state (isCompleted)
-      _todayTasksProvider?.updateTask(oldTask, newTask);
+      // Logic for TodayTasksProvider when archiving/unarchiving
+      if (newTask.isCompleted) {
+        // If archived, remove it from the list for today
+        _todayTasksProvider?.removeDeletedTask(newTask);
+      } else {
+        // If unarchived, update the task instance in the list for today
+        _todayTasksProvider?.updateTask(oldTask, newTask);
+      }
 
       saveTasks();
       notifyListeners();

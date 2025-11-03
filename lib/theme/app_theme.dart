@@ -16,6 +16,9 @@ class AppTheme {
   static const Color professionalCategoryColor = Color.fromARGB(255, 30, 100, 190);
   static const Color personalCategoryColor = Color.fromARGB(255, 190, 30, 100);
 
+  static const Color deleteButtonColor = Colors.grey;
+  static const Color unarchiveButtonColor = Colors.blueGrey;
+  
   static Color getQuadrantColor({
       required ImportanceLevel importance,
       required UrgencyLevel urgency,

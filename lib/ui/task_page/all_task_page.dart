@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:zbeub_task_plan/data/tasks.dart';
 import 'package:zbeub_task_plan/data/enums.dart';
 import 'package:zbeub_task_plan/data/today_tasks.dart'; // Import new provider
+import 'package:zbeub_task_plan/theme/app_theme.dart';
 import 'package:zbeub_task_plan/ui/forms/task_form.dart';
 
 // Helper function to convert the category string from navigation to the enum
@@ -103,6 +104,11 @@ class AllTasksPage extends StatelessWidget {
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        IconButton(
+                          icon: const Icon(Icons.delete_forever, color: AppTheme.deleteButtonColor),
+                          onPressed: () => tasksProvider.removeTask(task),
+                        ),
+
                         // Button to add to Today's Tasks
                         IconButton(
                           icon: Icon(
@@ -134,6 +140,13 @@ class AllTasksPage extends StatelessWidget {
                     ),
                     onTap: () {
                       debugPrint('Tapped on task: ${task.title}');
+                      showTaskFormModal(
+                        context,
+                        initialCategory: task.category,
+                        initialImportanceString: task.isImportant,
+                        initialUrgencyString: task.isUrgent,
+                        taskToEdit: task, // Pass the existing task
+                      );
                     },
                   ),
                 );

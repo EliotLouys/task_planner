@@ -10,6 +10,8 @@ void showTaskFormModal(
   required TasksCategories initialCategory,
   required ImportanceLevel initialImportanceString,
   required UrgencyLevel initialUrgencyString,
+  Tasks? taskToEdit, 
+
 }) {
   showModalBottomSheet(
     context: context,
@@ -22,6 +24,7 @@ void showTaskFormModal(
         initialCategory: initialCategory,
         initialImportanceString: initialImportanceString,
         initialUrgencyString: initialUrgencyString,
+        taskToEdit: taskToEdit,
       );
     },
   );
@@ -33,12 +36,14 @@ class TaskFormModal extends StatefulWidget {
     required this.initialCategory,
     required this.initialImportanceString,
     required this.initialUrgencyString,
+    this.taskToEdit, 
   });
 
   final TasksCategories initialCategory;
   final ImportanceLevel initialImportanceString;
   final UrgencyLevel initialUrgencyString;
-
+  final Tasks? taskToEdit;
+  
   @override
   State<TaskFormModal> createState() => _TaskFormModalState();
 }
@@ -52,6 +57,8 @@ class _TaskFormModalState extends State<TaskFormModal> {
   late UrgencyLevel _selectedUrgency;
   late ImportanceLevel _selectedImportance;
   late TasksCategories _selectedCategory;
+
+  bool get isEditing => widget.taskToEdit != null; // Helper to check mode
 
   Future<void> _selectDateAndTime(BuildContext context) async {
     // 1. Pick Date
@@ -93,10 +100,20 @@ class _TaskFormModalState extends State<TaskFormModal> {
   @override
   void initState() {
     super.initState();
-    // Initialize fields based on the selected matrix quadrant (passed from TaskPage)
-    _selectedCategory = widget.initialCategory;
-    _selectedUrgency = widget.initialUrgencyString;
-    _selectedImportance = widget.initialImportanceString;
+    if (isEditing) {
+      final task = widget.taskToEdit!;
+      _titleController.text = task.title;
+      _descriptionController.text = task.description;
+      _selectedDate = task.dueDate;
+      _selectedCategory = task.category;
+      _selectedUrgency = task.isUrgent;
+      _selectedImportance = task.isImportant;
+    } else {
+      _selectedDate = DateTime.now().add(const Duration(days: 1));
+      _selectedCategory = widget.initialCategory;
+      _selectedUrgency = widget.initialUrgencyString;
+      _selectedImportance = widget.initialImportanceString;
+    }
   }
 
   @override
@@ -108,10 +125,12 @@ class _TaskFormModalState extends State<TaskFormModal> {
 
 
 
-  // Handles form submission
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      final newTask = Tasks(
+      final task = Tasks(
+        // Preserve ID and isCompleted status if editing
+        id: isEditing ? widget.taskToEdit!.id : null, 
+        isCompleted: isEditing ? widget.taskToEdit!.isCompleted : false,
         title: _titleController.text,
         description: _descriptionController.text,
         dueDate: _selectedDate,
@@ -120,10 +139,13 @@ class _TaskFormModalState extends State<TaskFormModal> {
         isUrgent: _selectedUrgency,
       );
 
-      // Use context.read to access the provider for a one-time write operation
-      context.read<TasksProvider>().addTask(newTask);
+      // Use the appropriate provider method
+      if (isEditing) {
+        context.read<TasksProvider>().updateTask(task);
+      } else {
+        context.read<TasksProvider>().addTask(task);
+      }
 
-      // Close the bottom sheet
       Navigator.pop(context);
     }
   }
