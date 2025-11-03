@@ -42,12 +42,10 @@ class TodayTasksPage extends StatelessWidget {
               return Card(
                 elevation: 1,
                 margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                // REMOVED: color: quadrantColor.withOpacity(0.1)
                 color: AppTheme.getQuadrantColor(importance: task.isImportant, urgency: task.isUrgent),
-                child: IntrinsicHeight(
-                  child:
+                child: 
                   Row( // Use Row to place the color bar next to the content
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // 1. Thin vertical rectangle for category color (The strip)
                       Container(
@@ -62,6 +60,7 @@ class TodayTasksPage extends StatelessWidget {
                       // 2. Task Content (Expanded to fill remaining space)
                       Expanded(
                         child: ListTile(
+                          isThreeLine: true,
                           title: Text(
                             task.title,
                             style: TextStyle(
@@ -112,8 +111,7 @@ class TodayTasksPage extends StatelessWidget {
                     ),
                   ],
                   ),
-                ),
-              );
+                );
             },
           );
         },
