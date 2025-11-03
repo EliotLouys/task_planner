@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:zbeub_task_plan/data/enums.dart';
+import 'package:zbeub_task_plan/data/tasks.dart';
 import 'package:zbeub_task_plan/ui/task_page/all_task_page.dart';
 import 'package:zbeub_task_plan/theme/app_theme.dart';
+
+TasksCategories _stringToCategory(String title) {
+  if (title.contains('pro')) {
+    return TasksCategories.professional;
+  }
+  return TasksCategories.personal;
+}
 
 class SelectionPage extends StatefulWidget{
 
@@ -26,6 +35,7 @@ class _SelectionPageState extends State<SelectionPage>{
   Widget _buildClickableCard({
     required String title,
     required String subtitle,
+    required String numberOfItemsOfMatrix,
     required Color color,
     required VoidCallback onTap,
   }) {
@@ -64,6 +74,14 @@ class _SelectionPageState extends State<SelectionPage>{
                   color: Colors.white.withOpacity(0.8),
                 ),
               ),
+              Text(
+                numberOfItemsOfMatrix,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.white.withOpacity(0.6),
+                ),
+              ),
             ],
           ),
         ),
@@ -87,6 +105,7 @@ class _SelectionPageState extends State<SelectionPage>{
           _buildClickableCard(
             subtitle: 'Important',
             title: 'Urgent',
+            numberOfItemsOfMatrix: 'Tâches restantes : ${context.read<TasksProvider>().getNumberOfTasks(ImportanceLevel.important,UrgencyLevel.urgent, _stringToCategory(widget.title),)}',
             color: AppTheme.urgentImportantColor,
             onTap: () {
               Navigator.push(
@@ -107,6 +126,7 @@ class _SelectionPageState extends State<SelectionPage>{
           _buildClickableCard(
             subtitle: 'Pas important',
             title: 'Urgent',
+            numberOfItemsOfMatrix: 'Tâches restantes : ${context.read<TasksProvider>().getNumberOfTasks(ImportanceLevel.notImportant,UrgencyLevel.urgent, _stringToCategory(widget.title),)}',
             color: AppTheme.urgentNotImportantColor,
             onTap: () {
               Navigator.push(
@@ -125,6 +145,7 @@ class _SelectionPageState extends State<SelectionPage>{
           _buildClickableCard(
             subtitle: 'Important',
             title: 'Pas urgent',
+            numberOfItemsOfMatrix: 'Tâches restantes : ${context.read<TasksProvider>().getNumberOfTasks(ImportanceLevel.important,UrgencyLevel.notUrgent, _stringToCategory(widget.title),)}',
             color: AppTheme.importantNotUrgentColor,
             onTap: () {
               Navigator.push(
@@ -142,6 +163,7 @@ class _SelectionPageState extends State<SelectionPage>{
           _buildClickableCard(
             subtitle: 'Pas important',
             title: 'Pas urgent',
+            numberOfItemsOfMatrix: 'Tâches restantes : ${context.read<TasksProvider>().getNumberOfTasks(ImportanceLevel.notImportant,UrgencyLevel.notUrgent, _stringToCategory(widget.title),)}',
             color: AppTheme.notUrgentNotImportantColor,
             onTap: () {
               Navigator.push(

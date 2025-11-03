@@ -22,6 +22,18 @@ class TodayTasksProvider extends ChangeNotifier {
     return _tasksForToday.indexWhere((t) => t.id == task.id);
   }
 
+  void reorderTasks(int oldIndex, int newIndex) {
+    // Standard logic for Dart List reorder: if moving down, decrement newIndex by 1
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    final task = _tasksForToday.removeAt(oldIndex);
+    _tasksForToday.insert(newIndex, task);
+    
+    _saveTasksForToday();
+    notifyListeners();
+  }
+  
   // ADDED: Save task IDs instead of full task objects
   Future<void> _saveTasksForToday() async {
     final taskIds = _tasksForToday.map((t) => t.id).toList();

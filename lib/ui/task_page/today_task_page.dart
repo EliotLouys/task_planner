@@ -31,22 +31,25 @@ class TodayTasksPage extends StatelessWidget {
             );
           }
 
-         return ListView.builder(
+         return ReorderableListView.builder(
             itemCount: tasks.length,
+            onReorder: (int oldIndex, int newIndex) {
+              todayTasksProvider.reorderTasks(oldIndex, newIndex);
+            },
+            
             itemBuilder: (context, index) {
               final task = tasks[index];
               final categoryColor = AppTheme.getCategoryColor(task.category);
-              final matrixColor = AppTheme.getQuadrantColor(
-                importance: task.isImportant,
-                urgency: task.isUrgent,
-              );
+
               return Card(
+                // REQUIRED: ReorderableListView items must have a unique key
+                key: ValueKey(task.id), 
                 elevation: 1,
                 margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                color: matrixColor,
+                color: AppTheme.getQuadrantColor(importance: task.isImportant, urgency: task.isUrgent),
                 child: IntrinsicHeight(
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch, 
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       // Category color strip
                       Container(
@@ -60,28 +63,24 @@ class TodayTasksPage extends StatelessWidget {
                       
                       Expanded(
                         child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                          title: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Title - Enforce 1 line limit with ellipsis
-                              Text(
-                                task.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  decoration: task.isCompleted ? TextDecoration.lineThrough : TextDecoration.none,
-                                ),
-                              ),
-                              // Subtitle - Enforce 2 line limit with ellipsis
-                              Text(
-                                'Échéance: ${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                            ]
+                          isThreeLine: true, // Required flag to allow three vertical lines of content
+                          // FIX 1: Use the dedicated title property
+                          title: Text(
+                            task.title,
+                            maxLines: 1, // Ensure title respects space
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              decoration: task.isCompleted
+                                  ? TextDecoration.lineThrough
+                                  : TextDecoration.none,
+                            ),
+                          ),
+                          // FIX 2: Use the dedicated subtitle property
+                          subtitle: Text(
+                            'Échéance: ${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year} à ${task.dueDate.hour.toString().padLeft(2, '0')}:${task.dueDate.minute.toString().padLeft(2, '0')}',
+                            maxLines: 2, // Ensures subtitle respects space
+                            overflow: TextOverflow.ellipsis, 
+                            style: const TextStyle(fontSize: 14),
                           ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,

@@ -1,6 +1,7 @@
 
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:zbeub_task_plan/data/enums.dart';
@@ -122,6 +123,11 @@ class TasksProvider extends ChangeNotifier{
     saveTasks();
     notifyListeners();
   }
+
+  int getNumberOfTasks(ImportanceLevel importance, UrgencyLevel urgency, TasksCategories category){
+    return List.unmodifiable(_tasks.where((t)=> t.isImportant == importance && t.isUrgent==urgency && !t.isCompleted && t.category == category)).length;
+  }
+
 
   void removeTask(Tasks task) {
     _tasks.removeWhere((t) => t.id == task.id); // Remove by ID
