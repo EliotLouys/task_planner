@@ -9,7 +9,7 @@ android {
     namespace = "com.example.zbeub_task_plan"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
-
+    
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -38,23 +38,27 @@ android {
         }
     }
 
+    // FIX: Block to rename the APK file to include version number
     applicationVariants.configureEach {
-    if (name == "release") {
-        // 'project.name' defaults to 'app'
-        val appName = "app" 
-        val versionName = defaultConfig.versionName
-        val versionCode = defaultConfig.versionCode
-        
-        outputs.configureEach {
-            // Set the output file name to include version name and code
-            // Example: app-release-1.0.0-1.apk
-            outputFileName.set("$appName-release-$versionName-$versionCode.apk")
+        // Only target the release build variant
+        if (name == "release") {
+            // Retrieve version details from defaultConfig
+            val versionName = defaultConfig.versionName
+            val versionCode = defaultConfig.versionCode
+
+            // Configure the output file name for the release variant
+            outputs.configureEach { output ->
+                // Use 'output.outputFileName' to correctly resolve the property
+                output.outputFileName.set("app-release-$versionName-$versionCode.apk")
+            }
         }
     }
-}
+    // END FIX
 
 }
 
 flutter {
     source = "../.."
 }
+
+
