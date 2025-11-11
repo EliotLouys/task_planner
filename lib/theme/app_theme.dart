@@ -7,14 +7,14 @@ class AppTheme {
   static const Color primarySeedColor = Color.fromARGB(255, 30, 150, 190);
   static const double cardBorderRadius = 12.0;
   
-  static const Color urgentImportantColor = Color.fromARGB(255, 229, 30, 30); 
-  static const Color importantNotUrgentColor = Color.fromARGB(255, 250, 234, 16);
+  static const Color urgentImportantColor = Color.fromARGB(255, 206, 38, 16); 
+  static const Color importantNotUrgentColor = Color.fromARGB(255, 230, 204, 62);
   // Note: Colors.orange.shade600 corresponds to ARGB(255, 255, 140, 0)
-  static const Color urgentNotImportantColor =Color.fromARGB(255, 251, 140, 0); 
-  static const Color notUrgentNotImportantColor = Color.fromARGB(255, 132, 240, 146);
+  static const Color urgentNotImportantColor =Color.fromARGB(255, 218, 125, 13); 
+  static const Color notUrgentNotImportantColor = Color.fromARGB(255, 135, 172, 34);
 
-  static const Color professionalCategoryColor = Color.fromARGB(255, 30, 100, 190);
-  static const Color personalCategoryColor = Color.fromARGB(255, 190, 30, 100);
+  static const Color professionalCategoryColor = Color.fromARGB(255, 245, 197, 217);
+  static const Color personalCategoryColor = Color.fromARGB(255, 192, 226, 112);
 
   static const Color deleteButtonColor = Colors.grey;
   static const Color unarchiveButtonColor = Colors.blueGrey;
@@ -49,7 +49,7 @@ class AppTheme {
       // from a single seed color, ensuring harmony.
       colorScheme: ColorScheme.fromSeed(
         seedColor: const Color.fromARGB(255, 67, 22, 172),
-        primary: const Color.fromARGB(255, 183, 142, 236),
+        primary: const Color.fromARGB(255, 83, 47, 14),
         secondary: const Color.fromARGB(255, 218, 3, 56),
         surface: Colors.white,
       ),
