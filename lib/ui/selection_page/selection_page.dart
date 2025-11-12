@@ -32,31 +32,52 @@ class SelectionPage extends StatefulWidget{
 
 class _SelectionPageState extends State<SelectionPage>{
   
-  Widget _buildClickableCard({
-    required String title,
-    required String subtitle,
-    required String numberOfItemsOfMatrix,
-    required Color color,
-    required VoidCallback onTap,
+ Widget _buildClickableCard({
+    required TasksProvider tasksProvider,
+    required ImportanceLevel importance,
+    required UrgencyLevel urgency,
+    required TasksCategories category,
   }) {
+    
+    final importanceName = getImportanceLevelName(importance);
+    final urgencyName = getUrgencyLevelName(urgency);
+    final quadrantColor = AppTheme.getQuadrantColor(importance: importance, urgency: urgency);
+    
+    // CALCUL : Filtrer les tâches actives (non archivées/non complétées)
+    final taskCount = tasksProvider.tasks.where((task) {
+      return task.category == category &&
+             task.isImportant == importance &&
+             task.isUrgent == urgency;
+    }).length;
+    
     return 
     Card(
-      elevation: 5, // Adds a shadow effect
-      margin: const EdgeInsets.all(8.0), // Space around the card
-      color: color,
+      elevation: 5,
+      margin: const EdgeInsets.all(8.0),
+      color: quadrantColor,
       child: InkWell(
-        // Makes the entire card clickable
-        onTap: onTap,
-        splashColor: Colors.white70, // Visual feedback when tapped
+        // Navigation vers la page de la matrice
+        onTap: () {
+          Navigator.push(
+            context,
+            AllTasksPage.route( // Utilise la route mise à jour pour la liste des tâches
+              widget.title,
+              importance,
+              urgency,
+            ),
+          );
+        },
+        splashColor: Colors.white70,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            // Changé à spaceBetween pour placer le compteur en bas
+            mainAxisAlignment: MainAxisAlignment.center, 
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              // First line (Title)
+              // Texte 1 (Titre: Importance)
               Text(
-                title,
+                importanceName,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 20,
@@ -65,17 +86,18 @@ class _SelectionPageState extends State<SelectionPage>{
                 ),
               ),
               const SizedBox(height: 8),
-              // Second line (Subtitle/Detail)
+              // Texte 2 (Sous-titre: Urgence)
               Text(
-                subtitle,
+                urgencyName,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.white.withOpacity(0.8),
                 ),
               ),
+              
               Text(
-                numberOfItemsOfMatrix,
+                'Tâches restantes: $taskCount',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 12,
@@ -91,93 +113,56 @@ class _SelectionPageState extends State<SelectionPage>{
 
   @override
   Widget build(BuildContext context) {
+
+    final currentCategory = _stringToCategory(widget.title);    
+    
     return Scaffold(
       appBar: AppBar(
         title: Text('Classes des ${widget.title}'),
       ),
       // GridView fills the remaining screen space
-      body: GridView.count(
+      body: Consumer<TasksProvider>(builder: (context, tasksProvider, child){
+
+      return GridView.count(
         // Creates a 2x2 grid (2 columns)
         crossAxisCount: 2,
         // The children will be equally sized to fill the space
         children: <Widget>[
-          // --- Card 1 ---
-          _buildClickableCard(
-            subtitle: 'Important',
-            title: 'Urgent',
-            numberOfItemsOfMatrix: 'Tâches restantes : ${context.read<TasksProvider>().getNumberOfTasks(ImportanceLevel.important,UrgencyLevel.urgent, _stringToCategory(widget.title),)}',
-            color: AppTheme.urgentImportantColor,
-            onTap: () {
-              Navigator.push(
-                context,
-                // Updated navigation to new list page
-                AllTasksPage.route(
-                  widget.title,
-                  ImportanceLevel.important,
-                  UrgencyLevel.urgent,
-                ),
-              );
-            },
-          ),
-          
-
-          
-          // --- Card 3 ---
-          _buildClickableCard(
-            subtitle: 'Pas important',
-            title: 'Urgent',
-            numberOfItemsOfMatrix: 'Tâches restantes : ${context.read<TasksProvider>().getNumberOfTasks(ImportanceLevel.notImportant,UrgencyLevel.urgent, _stringToCategory(widget.title),)}',
-            color: AppTheme.urgentNotImportantColor,
-            onTap: () {
-              Navigator.push(
-                context,
-                // Updated navigation to new list page
-                AllTasksPage.route(
-                  widget.title,
-                  ImportanceLevel.notImportant,
-                  UrgencyLevel.urgent,
-                ),
-              );
-            },
-          ),
-          
-                    // --- Card 2 ---
-          _buildClickableCard(
-            subtitle: 'Important',
-            title: 'Pas urgent',
-            numberOfItemsOfMatrix: 'Tâches restantes : ${context.read<TasksProvider>().getNumberOfTasks(ImportanceLevel.important,UrgencyLevel.notUrgent, _stringToCategory(widget.title),)}',
-            color: AppTheme.importantNotUrgentColor,
-            onTap: () {
-              Navigator.push(
-                context,
-                // Updated navigation to new list page
-                AllTasksPage.route(
-                  widget.title,
-                  ImportanceLevel.important,
-                  UrgencyLevel.notUrgent,
-                ),
-              );
-            },
-          ),
-          // --- Card 4 ---
-          _buildClickableCard(
-            subtitle: 'Pas important',
-            title: 'Pas urgent',
-            numberOfItemsOfMatrix: 'Tâches restantes : ${context.read<TasksProvider>().getNumberOfTasks(ImportanceLevel.notImportant,UrgencyLevel.notUrgent, _stringToCategory(widget.title),)}',
-            color: AppTheme.notUrgentNotImportantColor,
-            onTap: () {
-              Navigator.push(
-                context,
-                // Updated navigation to new list page
-                  AllTasksPage.route(
-                  widget.title,
-                  ImportanceLevel.notImportant,
-                  UrgencyLevel.notUrgent,
-                ),
-              );
-            },
-          ),
-        ],
+          // --- Card 1: Important / Urgent ---
+              _buildClickableCard(
+                tasksProvider: tasksProvider,
+                category: currentCategory,
+                importance: ImportanceLevel.important,
+                urgency: UrgencyLevel.urgent,
+              ),
+              
+              // --- Card 2: Pas important / Urgent ---
+              _buildClickableCard(
+                tasksProvider: tasksProvider,
+                category: currentCategory,
+                importance: ImportanceLevel.notImportant,
+                urgency: UrgencyLevel.urgent,
+              ),
+              
+              
+              // --- Card 3: Important / Pas urgent ---
+              _buildClickableCard(
+                tasksProvider: tasksProvider,
+                category: currentCategory,
+                importance: ImportanceLevel.important,
+                urgency: UrgencyLevel.notUrgent,
+              ),
+              
+              // --- Card 4: Pas important / Pas urgent ---
+              _buildClickableCard(
+                tasksProvider: tasksProvider,
+                category: currentCategory,
+                importance: ImportanceLevel.notImportant,
+                urgency: UrgencyLevel.notUrgent,
+              ),
+            ],
+      );
+      }
       ),
     );
   }

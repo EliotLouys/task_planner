@@ -5,6 +5,7 @@ import 'package:zbeub_task_plan/ui/home_page/home_page.dart';
 import 'package:zbeub_task_plan/data/tasks.dart';
 import 'package:zbeub_task_plan/data/today_tasks.dart'; // Import new provider
 import 'package:zbeub_task_plan/notification.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,6 +52,20 @@ class MyApp extends StatelessWidget {
       title: 'Ton planner perso hihi',
       theme: AppTheme.lightTheme,
       home: const MyHomePage(title: 'Le ptit tablo'),
+
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      // ADDED: Supported locales (French and English fallback)
+      supportedLocales: const [
+        Locale('fr', 'FR'), // French
+        Locale('en', 'US'), // English fallback
+      ],
+      // Force set locale to French
+      locale: const Locale('fr', 'FR'),
+
     );
   }
 }

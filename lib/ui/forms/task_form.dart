@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:zbeub_task_plan/data/enums.dart';
 import 'package:zbeub_task_plan/data/tasks.dart';
-
+import 'package:zbeub_task_plan/theme/app_theme.dart';
+import 'package:zbeub_task_plan/ui/forms/matrix_change_form.dart';
 
 // Function to show the bottom sheet
 void showTaskFormModal(
@@ -128,15 +129,14 @@ class _TaskFormModalState extends State<TaskFormModal> {
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       final task = Tasks(
-        // Preserve ID and isCompleted status if editing
         id: isEditing ? widget.taskToEdit!.id : null, 
         isCompleted: isEditing ? widget.taskToEdit!.isCompleted : false,
         title: _titleController.text,
         description: _descriptionController.text,
         dueDate: _selectedDate,
-        category: _selectedCategory,
-        isImportant: _selectedImportance,
-        isUrgent: _selectedUrgency,
+        category: widget.taskToEdit?.category ?? _selectedCategory,
+        isImportant: widget.taskToEdit?.isImportant ?? _selectedImportance,
+        isUrgent: widget.taskToEdit?.isUrgent ?? _selectedUrgency,
       );
 
       // Use the appropriate provider method
@@ -150,11 +150,40 @@ class _TaskFormModalState extends State<TaskFormModal> {
     }
   }
 
+  void _launchMatrixChangeForm() {
+    if (widget.taskToEdit != null) {
+      // 1. Close the current task form (crucial for good UX)
+      Navigator.pop(context); 
+      
+      // 2. Launch the new modal with the task to be updated
+      showMatrixChangeModal(
+        context,
+        taskToUpdate: widget.taskToEdit!,
+      );
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     // Determine the space needed when the keyboard is open
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
 
+    final displayTask = widget.taskToEdit ?? Tasks(
+      title: 'N/A', 
+      description: '',
+      dueDate: _selectedDate,
+      category: _selectedCategory,
+      isImportant: _selectedImportance,
+      isUrgent: _selectedUrgency,
+    );
+
+    // Get the color for the display box
+    final quadrantColor = AppTheme.getQuadrantColor(
+      importance: displayTask.isImportant, 
+      urgency: displayTask.isUrgent,
+    );
+    
     return Padding(
       // Ensure the content is visible above the keyboard
       padding: EdgeInsets.only(bottom: bottomPadding),
@@ -178,6 +207,7 @@ class _TaskFormModalState extends State<TaskFormModal> {
                 // 1. Title Input
                 TextFormField(
                   controller: _titleController,
+                  textCapitalization: TextCapitalization.sentences,
                   decoration: const InputDecoration(
                     labelText: 'Titre de la tâche',
                     border: OutlineInputBorder(),
@@ -194,6 +224,7 @@ class _TaskFormModalState extends State<TaskFormModal> {
                 // 2. Description Input
                 TextFormField(
                   controller: _descriptionController,
+                  textCapitalization: TextCapitalization.sentences,
                   maxLines: 3,
                   decoration: const InputDecoration(
                     labelText: 'Description (optionnel)',
@@ -204,7 +235,7 @@ class _TaskFormModalState extends State<TaskFormModal> {
 
                 // 3. Due Date Picker
                 ListTile(
-                  title: Text('Échéance: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}'),
+                  title: Text('Échéance: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year} ${_selectedDate.hour}:${_selectedDate.minute}'),
                   trailing: const Icon(Icons.calendar_today),
                   onTap: () => _selectDateAndTime(context),
                   contentPadding: EdgeInsets.zero,
@@ -212,22 +243,28 @@ class _TaskFormModalState extends State<TaskFormModal> {
                 const SizedBox(height: 12),
 
                 // 4. Matrix Info (Non-editable as it's passed from the quadrant)
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Catégorie: ${getTasksCategoryName(_selectedCategory)}', 
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                      Text('Importance: ${getImportanceLevelName(widget.initialImportanceString)}',
-                        style: const TextStyle(color: Colors.black54)),
-                      Text('Urgence: ${getUrgencyLevelName(widget.initialUrgencyString)}',
-                        style: const TextStyle(color: Colors.black54)),
-                    ],
+                InkWell(
+                  onTap: isEditing ? _launchMatrixChangeForm : null, // Only clickable when editing
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: quadrantColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: isEditing 
+                        ? Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.5), width: 1)
+                        : null,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(isEditing ? 'Catégories (Cliquer pour changer)' : 'Catégories ', 
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 4),
+                        Text('Catégorie: ${getTasksCategoryName(displayTask.category)}'),
+                        Text('Importance: ${getImportanceLevelName(displayTask.isImportant)}'),
+                        Text('Urgence: ${getUrgencyLevelName(displayTask.isUrgent)}'),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
