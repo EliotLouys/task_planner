@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zbeub_task_plan/notification.dart';
 import 'package:zbeub_task_plan/theme/app_theme.dart';
 import 'package:zbeub_task_plan/ui/selection_page/selection_page.dart';
 import 'package:zbeub_task_plan/ui/task_page/archive_page.dart';
@@ -14,7 +15,16 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
+  // NOUVELLE MÉTHODE : Déclenche une notification instantanée
+  void _triggerInstantNotification() {
+    // Utilise un ID arbitraire (999) pour le test
+    notificationService.showInstantNotification(
+      999, 
+      'TEST INSTANTANÉ',
+      'Cette notification devrait s\'afficher immédiatement !',
+    );
+  }
+  
   @override
   Widget build(BuildContext context) {
 
@@ -81,6 +91,17 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               child: const Text(
                 "Archives",
+                textAlign: TextAlign.center,
+              ),
+            ),
+            ElevatedButton(
+              onPressed: _triggerInstantNotification,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.purple,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text(
+                "TEST NOTIFICATION INSTANTANÉE",
                 textAlign: TextAlign.center,
               ),
             ),

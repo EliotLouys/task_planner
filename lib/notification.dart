@@ -44,6 +44,29 @@ class NotificationService {
 
   }
 
+  Future<void> showInstantNotification(int id, String title, String body) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'instant_channel', 
+      'Notification Test',
+      channelDescription: 'Canal de test instantané.',
+      importance: Importance.max,
+      priority: Priority.high,
+      ticker: 'test_ticker',
+    );
+    
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await flutterLocalNotificationsPlugin.show(
+      id,
+      title,
+      body,
+      platformChannelSpecifics,
+      payload: 'instant_test',
+    );
+  }
+  
   Future<void> scheduleTaskDeadlineNotification(
       String taskId, DateTime deadline, String title, String body) async {
     
