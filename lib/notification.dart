@@ -13,7 +13,6 @@ class NotificationService {
 
   Future<void> initialize() async {
     tzData.initializeTimeZones();
-    // Default location for local notifications
     tz.setLocalLocation(tz.getLocation('Europe/Paris')); 
     
     const AndroidInitializationSettings initializationSettingsAndroid =
@@ -23,10 +22,26 @@ class NotificationService {
       android: initializationSettingsAndroid,
     );
 
+    // 1. Initialize the plugin
     await flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) async {},
     );
+
+    // 2. Request permission at runtime (required for Android 13+)
+    // This will pop up the native system dialog asking the user for authorization
+    final bool? granted = await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestNotificationsPermission();
+    
+    // Optionally request precise alarm scheduling permission if needed
+    // bool? preciseAlarmGranted = await flutterLocalNotificationsPlugin
+    //     .resolvePlatformSpecificImplementation<
+    //         AndroidFlutterLocalNotificationsPlugin>()
+    //     ?.requestExactAlarmsPermission();
+
+    debugPrint('Notification Permission Granted: $granted');
   }
 
   Future<void> scheduleTaskDeadlineNotification(
