@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:zbeub_task_plan/notification.dart';
 import 'package:zbeub_task_plan/theme/app_theme.dart';
 import 'package:zbeub_task_plan/ui/home_page/home_page.dart';
 import 'package:zbeub_task_plan/data/tasks.dart';
@@ -12,6 +13,8 @@ void main() async {
   final tasksProvider = TasksProvider();
   final todayTasksProvider = TodayTasksProvider();
 
+  await notificationService.initialize();
+  
   // 1. Establish the links between providers
   tasksProvider.setTodayTasksProvider(todayTasksProvider); 
   todayTasksProvider.setTasksProvider(tasksProvider); // New link for loading
