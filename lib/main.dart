@@ -4,7 +4,6 @@ import 'package:zbeub_task_plan/theme/app_theme.dart';
 import 'package:zbeub_task_plan/ui/home_page/home_page.dart';
 import 'package:zbeub_task_plan/data/tasks.dart';
 import 'package:zbeub_task_plan/data/today_tasks.dart'; // Import new provider
-import 'package:zbeub_task_plan/notification.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
