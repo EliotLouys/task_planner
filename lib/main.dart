@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:zbeub_task_plan/notification.dart';
 import 'package:zbeub_task_plan/theme/app_theme.dart';
 import 'package:zbeub_task_plan/ui/home_page/home_page.dart';
 import 'package:zbeub_task_plan/data/tasks.dart';
 import 'package:zbeub_task_plan/data/today_tasks.dart'; // Import new provider
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await notificationService.initialize();
-  
-  await Future.delayed(const Duration(seconds: 10));
 
 
   final tasksProvider = TasksProvider();

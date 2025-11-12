@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:zbeub_task_plan/data/enums.dart';
 import 'package:uuid/uuid.dart';
-import 'package:zbeub_task_plan/notification.dart';
 import 'package:zbeub_task_plan/data/today_tasks.dart';
 
 final _uuid =const Uuid();
@@ -119,39 +118,10 @@ class TasksProvider extends ChangeNotifier{
   List<Tasks> get allTasks => List.unmodifiable(_tasks);
 
 
-  void _rescheduleDeadlines() async {
-    // Rendu asynchrone par mesure de sécurité, mais le corps est maintenant simple.
-    print("RESCHEDULING PLS TELL ME IT LAUNCHES");
-    // 1. Annuler toutes les notifications précédentes
-    await notificationService.cancelAllNotifications();
-    print("Here ?");
-    // 2. Re-planifier la notification quotidienne (ID 0)
-    // On assume que la permission a été demandée lors de l'initialisation de l'app.
-    notificationService.scheduleDailyNotification(
-      0,
-      'Rappel Quotidien',
-      'N\'oubliez pas de vérifier vos tâches pour aujourd\'hui!',
-      const TimeOfDay(hour: 8, minute: 0)
-    );
-    
-    // 3. Planifier les notifications pour chaque tâche ACTIVE
-    print('tasks');
-
-    for (final task in tasks) {
-      print("Scheduling another notif");
-      notificationService.scheduleTaskDeadlineNotification(
-        task.id,
-        task.dueDate,
-        'Alerte Échéance: ${task.title}',
-        'Il vous reste 5 minutes pour terminer cette tâche!',
-      );
-    }
-  }
 
 
   void addTask(Tasks task) {
     _tasks.add(task);
-    _rescheduleDeadlines(); // Trigger rescheduling
     saveTasks();
     notifyListeners();
   }
@@ -164,7 +134,6 @@ class TasksProvider extends ChangeNotifier{
   void removeTask(Tasks task) {
     _tasks.removeWhere((t) => t.id == task.id); // Remove by ID
     _todayTasksProvider?.removeDeletedTask(task); // Notify today's list
-    _rescheduleDeadlines(); // Trigger rescheduling
     saveTasks();
     notifyListeners();
   }
@@ -179,7 +148,6 @@ class TasksProvider extends ChangeNotifier{
       // Notify today's list of the change (needed for title/date/etc. edits)
       _todayTasksProvider?.updateTask(oldTask, updatedTask);
 
-      _rescheduleDeadlines(); // Trigger rescheduling
       saveTasks();
       notifyListeners();
     }
@@ -212,7 +180,6 @@ class TasksProvider extends ChangeNotifier{
         _todayTasksProvider?.updateTask(oldTask, newTask);
       }
 
-      _rescheduleDeadlines(); // Trigger rescheduling
       saveTasks();
       notifyListeners();
     }
@@ -234,7 +201,6 @@ class TasksProvider extends ChangeNotifier{
       // Map the list of dynamic objects (maps) to Task objects
       _tasks.addAll(tasksJson.map((json) => Tasks.fromJson(json as Map<String, dynamic>)).toList());
       notifyListeners();
-      _rescheduleDeadlines(); // Trigger initial scheduling after loading
     }
   }
 
