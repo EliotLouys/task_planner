@@ -30,11 +30,12 @@ class NotificationService {
 
     // 2. Request permission at runtime (required for Android 13+)
     // This will pop up the native system dialog asking the user for authorization
-    final bool? granted = await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestNotificationsPermission();
+    final AndroidFlutterLocalNotificationsPlugin? androidImplementation = 
+        flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
     
+    await androidImplementation?.requestNotificationsPermission();
+    await androidImplementation?.requestExactAlarmsPermission();
     // Optionally request precise alarm scheduling permission if needed
     // bool? preciseAlarmGranted = await flutterLocalNotificationsPlugin
     //     .resolvePlatformSpecificImplementation<
@@ -84,6 +85,7 @@ class NotificationService {
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
   }
 
