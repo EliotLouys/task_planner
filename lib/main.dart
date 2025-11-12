@@ -9,11 +9,14 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await notificationService.initialize();
   
+  await Future.delayed(const Duration(seconds: 10));
+
+
   final tasksProvider = TasksProvider();
   final todayTasksProvider = TodayTasksProvider();
 
-  await notificationService.initialize();
   
   // 1. Establish the links between providers
   tasksProvider.setTodayTasksProvider(todayTasksProvider); 

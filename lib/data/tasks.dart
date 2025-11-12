@@ -121,10 +121,10 @@ class TasksProvider extends ChangeNotifier{
 
   void _rescheduleDeadlines() async {
     // Rendu asynchrone par mesure de sécurité, mais le corps est maintenant simple.
-    
+    print("RESCHEDULING PLS TELL ME IT LAUNCHES");
     // 1. Annuler toutes les notifications précédentes
     await notificationService.cancelAllNotifications();
-
+    print("Here ?");
     // 2. Re-planifier la notification quotidienne (ID 0)
     // On assume que la permission a été demandée lors de l'initialisation de l'app.
     notificationService.scheduleDailyNotification(
@@ -135,7 +135,10 @@ class TasksProvider extends ChangeNotifier{
     );
     
     // 3. Planifier les notifications pour chaque tâche ACTIVE
+    print('tasks');
+
     for (final task in tasks) {
+      print("Scheduling another notif");
       notificationService.scheduleTaskDeadlineNotification(
         task.id,
         task.dueDate,

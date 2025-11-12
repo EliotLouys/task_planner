@@ -1,6 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tzData;
+import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:flutter/material.dart';
 
 class NotificationService {
@@ -12,20 +12,21 @@ class NotificationService {
   }
 
   Future<void> initialize() async {
-    tzData.initializeTimeZones();
+    tz_data.initializeTimeZones();
     tz.setLocalLocation(tz.getLocation('Europe/Paris')); 
     
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
+    const DarwinInitializationSettings iosSettings = DarwinInitializationSettings();
     
     const InitializationSettings initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
+      iOS: iosSettings,
     );
 
     // 1. Initialize the plugin
     await flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) async {},
     );
 
     // 2. Request permission at runtime (required for Android 13+)
@@ -66,18 +67,21 @@ class NotificationService {
       payload: 'instant_test',
     );
   }
-  
+
   Future<void> scheduleTaskDeadlineNotification(
       String taskId, DateTime deadline, String title, String body) async {
     
+    print("AAAAAAAAAAAAAAAAZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ");
+
     // 1. Calculate the scheduled time (5 minutes before the deadline)
     final scheduleTime = deadline.subtract(const Duration(minutes: 1));
 
     // Convert to a TZDateTime object
     final tz.TZDateTime scheduledDate = tz.TZDateTime.from(scheduleTime, tz.local);
-    
+    print(scheduledDate);
     // Only schedule if the notification time is in the future
     if (scheduledDate.isBefore(tz.TZDateTime.now(tz.local))) {
+      print('Hello');
       // If the deadline is less than 5 minutes away (or in the past), skip scheduling.
       // This prevents unnecessary immediate notification attempts on old tasks.
       return; 
