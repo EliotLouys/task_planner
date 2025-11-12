@@ -13,7 +13,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
-        // FIX 1: Enable Core Library Desugaring
         isCoreLibraryDesugaringEnabled = true 
     }
 
@@ -43,9 +42,7 @@ android {
 
 }
 
-// FIX 2: Add the desugaring dependency block
 dependencies {
-    // This is the dependency required by flutter_local_notifications for Java 8 features
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }
 
