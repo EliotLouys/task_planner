@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zbeub_task_plan/services/notification_service.dart';
 import 'package:zbeub_task_plan/theme/app_theme.dart';
 import 'package:zbeub_task_plan/ui/selection_page/selection_page.dart';
 import 'package:zbeub_task_plan/ui/task_page/archive_page.dart';
@@ -82,6 +83,16 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               child: const Text(
                 "Archives",
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 20), // Espacement entre les boutons
+            ElevatedButton(onPressed: (){
+              NotificationService.showImmediateNotification();
+              },
+              
+              child: const Text(
+                "Tester Notification Immédiate",
                 textAlign: TextAlign.center,
               ),
             ),

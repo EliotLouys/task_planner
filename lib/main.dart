@@ -5,12 +5,14 @@ import 'package:zbeub_task_plan/ui/home_page/home_page.dart';
 import 'package:zbeub_task_plan/data/tasks.dart';
 import 'package:zbeub_task_plan/data/today_tasks.dart'; // Import new provider
 import 'package:flutter_localizations/flutter_localizations.dart';
-
+import 'package:zbeub_task_plan/services/notification_service.dart'; // ADDED
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-
+  await NotificationService.initialize();
+  await NotificationService.scheduleDailyReminder();
+  
   final tasksProvider = TasksProvider();
   final todayTasksProvider = TodayTasksProvider();
 

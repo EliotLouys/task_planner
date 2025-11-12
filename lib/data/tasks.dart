@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:zbeub_task_plan/data/enums.dart';
 import 'package:uuid/uuid.dart';
 import 'package:zbeub_task_plan/data/today_tasks.dart';
+import 'package:zbeub_task_plan/services/notification_service.dart';
 
 final _uuid =const Uuid();
 
@@ -122,6 +123,7 @@ class TasksProvider extends ChangeNotifier{
 
   void addTask(Tasks task) {
     _tasks.add(task);
+    NotificationService.scheduleTaskReminder(task);
     saveTasks();
     notifyListeners();
   }
@@ -132,6 +134,7 @@ class TasksProvider extends ChangeNotifier{
 
 
   void removeTask(Tasks task) {
+    NotificationService.cancelNotification(task.id);
     _tasks.removeWhere((t) => t.id == task.id); // Remove by ID
     _todayTasksProvider?.removeDeletedTask(task); // Notify today's list
     saveTasks();
@@ -143,6 +146,20 @@ class TasksProvider extends ChangeNotifier{
     
     if (index != -1) {
       final oldTask = _tasks[index];
+      if (oldTask.dueDate != updatedTask.dueDate || 
+          oldTask.title != updatedTask.title || 
+          oldTask.isCompleted != updatedTask.isCompleted ||
+          oldTask.isImportant != updatedTask.isImportant || 
+          oldTask.isUrgent != updatedTask.isUrgent) {
+        
+        NotificationService.cancelNotification(oldTask.id); 
+
+        // Only schedule if the task is not completed (archived)
+        if (!updatedTask.isCompleted) {
+          NotificationService.scheduleTaskReminder(updatedTask); 
+        }
+      }
+
       _tasks[index] = updatedTask;
 
       // Notify today's list of the change (needed for title/date/etc. edits)
@@ -173,9 +190,11 @@ class TasksProvider extends ChangeNotifier{
 
       // Logic for TodayTasksProvider when archiving/unarchiving
       if (newTask.isCompleted) {
+        NotificationService.cancelNotification(newTask.id);
         // If archived, remove it from the list for today
         _todayTasksProvider?.removeDeletedTask(newTask);
       } else {
+        NotificationService.scheduleTaskReminder(newTask);
         // If unarchived, update the task instance in the list for today
         _todayTasksProvider?.updateTask(oldTask, newTask);
       }
@@ -199,7 +218,11 @@ class TasksProvider extends ChangeNotifier{
       final List<dynamic> tasksJson = jsonDecode(tasksString) as List<dynamic>;
       _tasks.clear();
       // Map the list of dynamic objects (maps) to Task objects
-      _tasks.addAll(tasksJson.map((json) => Tasks.fromJson(json as Map<String, dynamic>)).toList());
+      final loadedTasks = tasksJson.map((json) => Tasks.fromJson(json as Map<String, dynamic>)).toList();
+      _tasks.addAll(loadedTasks);
+      for (final task in loadedTasks.where((t) => !t.isCompleted)) {
+        NotificationService.scheduleTaskReminder(task);
+      }
       notifyListeners();
     }
   }
