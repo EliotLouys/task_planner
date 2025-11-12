@@ -42,7 +42,6 @@ class NotificationService {
     //         AndroidFlutterLocalNotificationsPlugin>()
     //     ?.requestExactAlarmsPermission();
 
-    debugPrint('Notification Permission Granted: $granted');
   }
 
   Future<void> scheduleTaskDeadlineNotification(
