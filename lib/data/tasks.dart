@@ -1,13 +1,12 @@
 
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:zbeub_task_plan/data/enums.dart';
 import 'package:uuid/uuid.dart';
-import 'package:zbeub_task_plan/data/today_tasks.dart';
 import 'package:zbeub_task_plan/notification.dart';
+import 'package:zbeub_task_plan/data/today_tasks.dart';
 
 final _uuid =const Uuid();
 
@@ -120,20 +119,23 @@ class TasksProvider extends ChangeNotifier{
   List<Tasks> get allTasks => List.unmodifiable(_tasks);
 
 
-  void _rescheduleDeadlines() {
-    // 1. Cancel all previous task-related notifications to prevent duplicates
-    notificationService.cancelAllNotifications();
+  void _rescheduleDeadlines() async {
+    // Rendu asynchrone par mesure de sécurité, mais le corps est maintenant simple.
+    
+    // 1. Annuler toutes les notifications précédentes
+    await notificationService.cancelAllNotifications();
 
-    // 2. Re-schedule the persistent daily notification (ID 0)
+    // 2. Re-planifier la notification quotidienne (ID 0)
+    // On assume que la permission a été demandée lors de l'initialisation de l'app.
     notificationService.scheduleDailyNotification(
-      0, 
-      'C\'est l\'heure de planifier!',
-      'N\'oubliez pas de vérifier et d\'organiser vos tâches pour aujourd\'hui.',
-      const TimeOfDay(hour: 8, minute: 0),
+      0,
+      'Rappel Quotidien',
+      'N\'oubliez pas de vérifier vos tâches pour aujourd\'hui!',
+      const TimeOfDay(hour: 8, minute: 0)
     );
     
-    // 3. Schedule notifications for each ACTIVE task
-    for (final task in tasks) { // 'tasks' getter only returns non-completed tasks
+    // 3. Planifier les notifications pour chaque tâche ACTIVE
+    for (final task in tasks) {
       notificationService.scheduleTaskDeadlineNotification(
         task.id,
         task.dueDate,
@@ -142,7 +144,8 @@ class TasksProvider extends ChangeNotifier{
       );
     }
   }
-  
+
+
   void addTask(Tasks task) {
     _tasks.add(task);
     _rescheduleDeadlines(); // Trigger rescheduling
