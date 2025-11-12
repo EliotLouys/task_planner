@@ -38,7 +38,9 @@ class NotificationService {
 
     await _notifications.initialize(
       initializationSettings,
-      // onDidReceiveNotificationResponse: (details) { /* handle taps if needed */ },
+      onDidReceiveNotificationResponse: (details) {
+        // Handle notification tapped logic here if needed
+      },
     );
 
     // Request permissions for Android 13+
