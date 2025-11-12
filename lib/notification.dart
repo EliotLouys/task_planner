@@ -7,36 +7,74 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  // 1. Initialization
+  int _generateUniqueId(String input) {
+    return input.hashCode.toUnsigned(31);
+  }
+
   Future<void> initialize() async {
     tzData.initializeTimeZones();
     // Default location for local notifications
     tz.setLocalLocation(tz.getLocation('Europe/Paris')); 
     
-    // Android settings
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
     
-    // Global initialization settings
     const InitializationSettings initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
     );
 
     await flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) async {
-        // You can add navigation logic here if the user taps the notification
-      },
+      onDidReceiveNotificationResponse: (NotificationResponse response) async {},
     );
   }
 
-  // 2. Scheduled Daily Notification - USING NAMED ARGUMENTS TO FIX TYPE ERROR
-  Future<void> scheduleDailyNotification({
-      required int id, 
-      required String title, 
-      required String body, 
-      required TimeOfDay time, // Correctly typed as TimeOfDay
-  }) async {
+  Future<void> scheduleTaskDeadlineNotification(
+      String taskId, DateTime deadline, String title, String body) async {
+    
+    // 1. Calculate the scheduled time (5 minutes before the deadline)
+    final scheduleTime = deadline.subtract(const Duration(minutes: 1));
+
+    // Convert to a TZDateTime object
+    final tz.TZDateTime scheduledDate = tz.TZDateTime.from(scheduleTime, tz.local);
+    
+    // Only schedule if the notification time is in the future
+    if (scheduledDate.isBefore(tz.TZDateTime.now(tz.local))) {
+      // If the deadline is less than 5 minutes away (or in the past), skip scheduling.
+      // This prevents unnecessary immediate notification attempts on old tasks.
+      return; 
+    }
+
+    final id = _generateUniqueId(taskId);
+    
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'deadline_channel', // New channel ID for deadlines
+      'Rappel d\'échéance',
+      channelDescription: 'Rappel 5 minutes avant la date limite d\'une tâche.',
+      importance: Importance.max,
+      priority: Priority.high,
+      ticker: 'ticker',
+    );
+    
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+      id,
+      title,
+      body,
+      scheduledDate,
+      platformChannelSpecifics,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.time,
+    );
+  }
+
+  // Existing function (kept for daily reminder)
+  Future<void> scheduleDailyNotification(
+      int id, String title, String body, TimeOfDay time) async {
     
     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
     tz.TZDateTime scheduledDate = tz.TZDateTime(
@@ -48,15 +86,14 @@ class NotificationService {
       time.minute,
     );
 
-    // If the scheduled time is in the past today, schedule it for tomorrow.
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
 
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
-      'daily_task_channel', // Channel ID
-      'Rappel Quotidien',   // Channel Name
+      'daily_task_channel', 
+      'Rappel Quotidien',   
       channelDescription: 'Rappel pour vérifier les tâches du jour.',
       importance: Importance.max,
       priority: Priority.high,
@@ -78,7 +115,6 @@ class NotificationService {
     );
   }
 
-  // Helper to clear existing notifications
   Future<void> cancelAllNotifications() async {
     await flutterLocalNotificationsPlugin.cancelAll();
   }

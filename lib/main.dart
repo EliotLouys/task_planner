@@ -23,13 +23,6 @@ void main() async {
   // 3. Load Today's Tasks (which depends on the main task list)
   await todayTasksProvider.loadTasksForToday();
 
-  notificationService.scheduleDailyNotification(
-    id : 0, // Notification ID
-    title: 'Bonsoir la zone',
-    body: 'Ca va ?',
-
-    time: const TimeOfDay(hour: 19, minute: 56),
-    ); 
 
   runApp(
     MultiProvider(
