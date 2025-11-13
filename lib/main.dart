@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 import 'package:zbeub_task_plan/theme/app_theme.dart';
 import 'package:zbeub_task_plan/ui/home_page/home_page.dart';
@@ -7,10 +8,16 @@ import 'package:zbeub_task_plan/data/today_tasks.dart'; // Import new provider
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:zbeub_task_plan/services/notification_service.dart'; // ADDED
 
+@pragma('vm:entry-point')
+void notificationTapBackground(NotificationResponse notificationResponse) {
+  // Even if left empty, its presence prevents the app from hanging 
+  // on launch if an alarm event occurs in the background.
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await NotificationService.initialize();
+  await NotificationService.initialize(notificationTapBackground);
   await NotificationService.scheduleDailyReminder();
   
   final tasksProvider = TasksProvider();
