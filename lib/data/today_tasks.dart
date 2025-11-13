@@ -4,7 +4,7 @@ import 'package:zbeub_task_plan/data/tasks.dart';
 import 'dart:convert'; // ADDED
 
 class TodayTasksProvider extends ChangeNotifier {
-  static const int maxTasks = 5;
+  static const int maxTasks = 10;
   
   final List<Tasks> _tasksForToday = [];
   final _storage = FlutterSecureStorage(); // ADDED Storage instance

@@ -79,7 +79,7 @@ class TodayTasksPage extends StatelessWidget {
                             ),
                             subtitle: Text(
                               'Échéance: ${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year} à ${task.dueDate.hour.toString().padLeft(2, '0')}:${task.dueDate.minute.toString().padLeft(2, '0')}',
-                              maxLines: 1, 
+                              maxLines: 2, 
                               overflow: TextOverflow.ellipsis, 
                               style: const TextStyle(fontSize: 14),
                             ),
@@ -88,27 +88,38 @@ class TodayTasksPage extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                // ADDED: The visible drag indicator icon
-                                const Icon(Icons.drag_indicator, color: Colors.grey),
-
-                                // Delete Button
+                               // 2. Delete Button (Smaller icon, minimal padding/constraints)
                                 IconButton(
                                   icon: const Icon(Icons.delete_forever, color: Colors.grey),
+                                  iconSize: 20.0, // Reduced icon size
+                                  padding: EdgeInsets.zero, // Remove default padding
+                                  constraints: const BoxConstraints(minWidth: 22, minHeight: 28), // Aggressively minimal constraints
                                   onPressed: () => tasksProvider.removeTask(task),
                                 ),
-                                // Remove from Today's List button
+
+                                // 3. Remove from Today's List button (Smaller icon, minimal padding/constraints)
                                 IconButton(
                                   icon: const Icon(Icons.remove_circle, color: Colors.red),
+                                  iconSize: 20.0, // Reduced icon size
+                                  padding: EdgeInsets.zero, // Remove default padding
+                                  constraints: const BoxConstraints(minWidth: 22, minHeight: 28), // Aggressively minimal constraints
                                   onPressed: () {
                                     todayTasksProvider.removeTaskFromToday(task);
                                   },
                                 ),
-                                // Checkbox for completion status (updates main task list)
-                                Checkbox(
-                                  value: task.isCompleted,
-                                  onChanged: (_) {
-                                    tasksProvider.toggleTaskCompletion(task);
-                                  },
+
+                                // 4. Checkbox (Reduced size, uses shrinkWrap to minimize tap target space)
+                                Transform.scale(
+                                  scale: 0.8, // Reduced checkbox size by 20%
+                                  child: Checkbox(
+                                    value: task.isCompleted,
+                                    onChanged: (_) {
+                                      tasksProvider.toggleTaskCompletion(task);
+                                    },
+                                    visualDensity: VisualDensity.compact, 
+                                    // CRITICAL: Forces the Checkbox to take minimum size.
+                                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap, 
+                                  ),
                                 ),
                               ],
                             ),

@@ -1,6 +1,5 @@
-// lib/services/notification_service.dart
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz_data;
@@ -49,7 +48,6 @@ class NotificationService {
         ?.requestNotificationsPermission();
   }
   
-  // Calculates the next 10:00 AM instance in the local timezone.
   static tz.TZDateTime _nextInstanceOfTenAM() {
     final now = tz.TZDateTime.now(tz.local);
     var scheduledDate = 
@@ -64,8 +62,8 @@ class NotificationService {
   
   /// Schedules a recurring daily notification at 10:00 AM.
   static Future<void> scheduleDailyReminder() async {
-    const title = "C'est l'heure du plan !";
-    const body = "N'oubliez pas de vérifier votre liste de tâches pour aujourd'hui et d'organiser.";
+    const title = "C'est l'heure !";
+    const body = "VAVOIRTéTACH.";
     
     await _notifications.zonedSchedule(
       _dailyReminderId,
@@ -82,7 +80,7 @@ class NotificationService {
 
   /// Schedules a reminder 30 minutes before the task is due.
   static Future<void> scheduleTaskReminder(Tasks task) async {
-    print("Scheduling entered");
+    debugPrint("Scheduling entered");
     // Only schedule if the task is NOT completed
     if (task.isCompleted) return;
 
@@ -96,7 +94,7 @@ class NotificationService {
     // Only schedule if the reminder time is in the future
     if (scheduledDate.isBefore(tz.TZDateTime.now(tz.local))) {
       // If task is already due or too close, just cancel any previous reminder
-      print("entered cancelation");
+      debugPrint("entered cancelation");
       await cancelNotification(task.id); 
       return; 
     }
@@ -107,10 +105,10 @@ class NotificationService {
     final quadrantName = 
         '${getImportanceLevelName(task.isImportant)} / ${getUrgencyLevelName(task.isUrgent)}';
 
-    final title = "Rappel de tâche : ${task.title}";
-    final body = "$categoryName ($quadrantName) est due dans 30 minutes.";
+    final title = "Rappel de tâche : ${task.title}, $categoryName, $quadrantName";
+    final body = "La deadline est dans 30 minute";
 
-    print("just before scheduling");
+    debugPrint("just before scheduling");
     await _notifications.zonedSchedule(
       taskId,
       title,
@@ -121,7 +119,7 @@ class NotificationService {
       uiLocalNotificationDateInterpretation: 
           UILocalNotificationDateInterpretation.absoluteTime,
     );
-    print("just after scheduling");
+    debugPrint("just after scheduling");
   }
 
   /// Sends an immediate notification for testing the format.

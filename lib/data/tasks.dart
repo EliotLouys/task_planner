@@ -123,7 +123,7 @@ class TasksProvider extends ChangeNotifier{
 
   void addTask(Tasks task) {
     _tasks.add(task);
-    NotificationService.scheduleTaskReminder(task);
+    // NotificationService.scheduleTaskReminder(task);
     saveTasks();
     notifyListeners();
   }
@@ -156,7 +156,7 @@ class TasksProvider extends ChangeNotifier{
 
         // Only schedule if the task is not completed (archived)
         if (!updatedTask.isCompleted) {
-          NotificationService.scheduleTaskReminder(updatedTask); 
+          // NotificationService.scheduleTaskReminder(updatedTask); 
         }
       }
 
@@ -194,7 +194,7 @@ class TasksProvider extends ChangeNotifier{
         // If archived, remove it from the list for today
         _todayTasksProvider?.removeDeletedTask(newTask);
       } else {
-        NotificationService.scheduleTaskReminder(newTask);
+        // NotificationService.scheduleTaskReminder(newTask);
         // If unarchived, update the task instance in the list for today
         _todayTasksProvider?.updateTask(oldTask, newTask);
       }
@@ -221,7 +221,7 @@ class TasksProvider extends ChangeNotifier{
       final loadedTasks = tasksJson.map((json) => Tasks.fromJson(json as Map<String, dynamic>)).toList();
       _tasks.addAll(loadedTasks);
       for (final task in loadedTasks.where((t) => !t.isCompleted)) {
-        NotificationService.scheduleTaskReminder(task);
+        // NotificationService.scheduleTaskReminder(task);
       }
       notifyListeners();
     }
