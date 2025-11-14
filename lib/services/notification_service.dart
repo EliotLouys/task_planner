@@ -22,6 +22,21 @@ class NotificationService {
     return taskId.hashCode.abs();
   }
 
+  static Duration _getReminderOffset(ReminderValues value) {
+    switch (value) {
+      case ReminderValues.none:
+        return Duration.zero; // Handled by caller, but safe exit strategy
+      case ReminderValues.thirtyMinutesBefore:
+        return const Duration(minutes: 30);
+      case ReminderValues.oneHourBefore:
+        return const Duration(hours: 1);
+      case ReminderValues.twoHoursBefore:
+        return const Duration(hours: 2);
+      case ReminderValues.oneDayBefore:
+        return const Duration(days: 1);
+    }
+  }
+
   /// Initializes timezone data and sets up the notification plugin.
   static Future<void> initialize(DidReceiveNotificationResponseCallback? onDidReceiveBackgroundNotificationResponse) async {
     // Initialize timezone data and set local location (assuming France/Paris timezone based on file names)
@@ -86,8 +101,9 @@ class NotificationService {
 
     final taskId = _taskIdToInt(task.id);
     final dueDateTime = task.dueDate;
+    final offset = _getReminderOffset(task.reminderValue);
     final scheduledDate = tz.TZDateTime.from(
-      dueDateTime.subtract(const Duration(minutes: 30)), 
+      dueDateTime.subtract(offset), 
       tz.local
     );
 

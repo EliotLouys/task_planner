@@ -19,6 +19,7 @@ class Tasks {
   final TasksCategories category;
   final ImportanceLevel isImportant; 
   final UrgencyLevel isUrgent; 
+  final ReminderValues reminderValue;
 
   Tasks({
     String? id,
@@ -29,6 +30,7 @@ class Tasks {
     required this.category,
     required this.isImportant,
     required this.isUrgent,
+    required this.reminderValue,
   }): id = id ?? _uuid.v4();
 
   Map<String, dynamic> toJson() {
@@ -41,6 +43,7 @@ class Tasks {
       'category': category.name, 
       'isImportant': isImportant.name,
       'isUrgent': isUrgent.name,
+      'reminderValue': reminderValue.name,
     };
   }
 
@@ -55,7 +58,11 @@ class Tasks {
     UrgencyLevel parseUrgency(String name) => UrgencyLevel.values.firstWhere(
         (e) => e.name == name,
         orElse: () => UrgencyLevel.notUrgent);
-        
+    ReminderValues parseReminder(String? name) => ReminderValues.values.firstWhere(
+        (e) => e.name == name,
+        // Default to a 30-minute reminder if value is missing from old tasks
+        orElse: () => ReminderValues.thirtyMinutesBefore);
+
     return Tasks(
       id: json['id'] as String,
       title: json['title'],
@@ -66,6 +73,7 @@ class Tasks {
       category: parseCategory(json['category'] as String),
       isImportant: parseImportance(json['isImportant'] as String),
       isUrgent: parseUrgency(json['isUrgent'] as String),
+      reminderValue: parseReminder(json['reminderValue'] as String)
     );
   }
 
@@ -123,7 +131,7 @@ class TasksProvider extends ChangeNotifier{
 
   void addTask(Tasks task) {
     _tasks.add(task);
-    // NotificationService.scheduleTaskReminder(task);
+    NotificationService.scheduleTaskReminder(task);
     saveTasks();
     notifyListeners();
   }
@@ -156,7 +164,7 @@ class TasksProvider extends ChangeNotifier{
 
         // Only schedule if the task is not completed (archived)
         if (!updatedTask.isCompleted) {
-          // NotificationService.scheduleTaskReminder(updatedTask); 
+          NotificationService.scheduleTaskReminder(updatedTask); 
         }
       }
 
@@ -185,6 +193,7 @@ class TasksProvider extends ChangeNotifier{
         category: oldTask.category,
         isImportant: oldTask.isImportant,
         isUrgent: oldTask.isUrgent,
+        reminderValue: oldTask.reminderValue,
       );
       _tasks[index] = newTask;
 
@@ -194,7 +203,7 @@ class TasksProvider extends ChangeNotifier{
         // If archived, remove it from the list for today
         _todayTasksProvider?.removeDeletedTask(newTask);
       } else {
-        // NotificationService.scheduleTaskReminder(newTask);
+        NotificationService.scheduleTaskReminder(newTask);
         // If unarchived, update the task instance in the list for today
         _todayTasksProvider?.updateTask(oldTask, newTask);
       }
@@ -221,7 +230,7 @@ class TasksProvider extends ChangeNotifier{
       final loadedTasks = tasksJson.map((json) => Tasks.fromJson(json as Map<String, dynamic>)).toList();
       _tasks.addAll(loadedTasks);
       for (final task in loadedTasks.where((t) => !t.isCompleted)) {
-        // NotificationService.scheduleTaskReminder(task);
+        NotificationService.scheduleTaskReminder(task);
       }
       notifyListeners();
     }

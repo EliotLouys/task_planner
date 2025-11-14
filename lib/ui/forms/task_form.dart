@@ -60,6 +60,7 @@ class _TaskFormModalState extends State<TaskFormModal> {
   late UrgencyLevel _selectedUrgency;
   late ImportanceLevel _selectedImportance;
   late TasksCategories _selectedCategory;
+  late ReminderValues _selectedReminderValue;
 
   bool get isEditing => widget.taskToEdit != null; // Helper to check mode
 
@@ -111,11 +112,13 @@ class _TaskFormModalState extends State<TaskFormModal> {
       _selectedCategory = task.category;
       _selectedUrgency = task.isUrgent;
       _selectedImportance = task.isImportant;
+      _selectedReminderValue = task.reminderValue;
     } else {
       _selectedDate = DateTime.now().add(const Duration(days: 1));
       _selectedCategory = widget.initialCategory;
       _selectedUrgency = widget.initialUrgencyString;
       _selectedImportance = widget.initialImportanceString;
+      _selectedReminderValue = ReminderValues.none;
     }
   }
 
@@ -139,6 +142,8 @@ class _TaskFormModalState extends State<TaskFormModal> {
         category: widget.taskToEdit?.category ?? _selectedCategory,
         isImportant: widget.taskToEdit?.isImportant ?? _selectedImportance,
         isUrgent: widget.taskToEdit?.isUrgent ?? _selectedUrgency,
+        reminderValue: widget.taskToEdit?.reminderValue ?? _selectedReminderValue,
+
       );
 
       // Use the appropriate provider method
@@ -178,6 +183,7 @@ class _TaskFormModalState extends State<TaskFormModal> {
       category: _selectedCategory,
       isImportant: _selectedImportance,
       isUrgent: _selectedUrgency,
+      reminderValue: _selectedReminderValue,
     );
 
     // Get the color for the display box
@@ -243,7 +249,34 @@ class _TaskFormModalState extends State<TaskFormModal> {
                   contentPadding: EdgeInsets.zero,
                 ),
                 const SizedBox(height: 12),
-
+                // 4. Reminder Dropdown (ADDED)
+                DropdownButtonFormField<ReminderValues>(
+                  decoration: const InputDecoration(
+                    labelText: 'Rappel Personnalisé',
+                    border: OutlineInputBorder(),
+                  ),
+                  value: _selectedReminderValue,
+                  items: ReminderValues.values.map((ReminderValues value) {
+                    return DropdownMenuItem<ReminderValues>(
+                      value: value,
+                      child: Text(getReminderValueName(value)),
+                    );
+                  }).toList(),
+                  onChanged: (ReminderValues? newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        _selectedReminderValue = newValue;
+                      });
+                    }
+                  },
+                  validator: (value) {
+                    if (value == null) {
+                      return 'Veuillez sélectionner un rappel.';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
                 // 4. Matrix Info (Non-editable as it's passed from the quadrant)
                 InkWell(
                   onTap: isEditing ? _launchMatrixChangeForm : null, // Only clickable when editing

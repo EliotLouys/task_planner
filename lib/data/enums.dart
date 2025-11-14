@@ -40,3 +40,26 @@ String getUrgencyLevelName(UrgencyLevel level) {
       return 'Pas urgent';
   }
 }
+
+enum ReminderValues {
+  none,
+  thirtyMinutesBefore,
+  oneHourBefore,
+  twoHoursBefore,
+  oneDayBefore,
+}
+
+String getReminderValueName(ReminderValues value) {
+  switch (value) {
+    case ReminderValues.none:
+      return 'Aucun rappel';
+    case ReminderValues.thirtyMinutesBefore:
+      return '30 minutes avant';
+    case ReminderValues.oneHourBefore:
+      return '1 heure avant';
+    case ReminderValues.twoHoursBefore:
+      return '2 heures avant';
+    case ReminderValues.oneDayBefore:
+      return '1 jour avant';
+  }
+}

@@ -58,6 +58,7 @@ class _MatrixChangeFormState extends State<MatrixChangeForm> {
       category: widget.taskToUpdate.category,
       isImportant: _selectedImportance,
       isUrgent: _selectedUrgency,
+      reminderValue: widget.taskToUpdate.reminderValue,
     );
 
     context.read<TasksProvider>().updateTask(updatedTask);
