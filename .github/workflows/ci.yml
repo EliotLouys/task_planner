@@ -3,59 +3,61 @@ name: Build Flutter APK
 on:
   push:
     tags:
-      - 'v*'   # Runs when you push a tag like v1.0.0
-  workflow_dispatch:   # Also allow manual trigger from Actions tab
+      - "v*" # Runs when you push a tag like v1.0.0
+  workflow_dispatch: # Also allow manual trigger from Actions tab
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write 
+      contents: write
 
-      
     steps:
-      # Checkout repository
+      # 1. Checkout repository
       - name: Checkout
         uses: actions/checkout@v3
 
-      # Install dependencies
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y unzip xz-utils git curl
+      # 2. Use the official Flutter setup action (Replaces 3 manual steps)
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          # Use a newer stable version compatible with your pubspec.yaml constraints
+          # Using 'stable' is usually best, or target the latest version in the 3.35.0+ range.
+          flutter-version: "3.22.x" # Or 'stable' if you want the very latest
+          channel: "stable"
+          cache: true
 
-      # Download Flutter SDK manually
-      - name: Install Flutter 3.29.3
-        run: |
-          curl -L https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.29.3-stable.tar.xz -o flutter.tar.xz
-          tar -xf flutter.tar.xz
-          export PATH="$PWD/flutter/bin:$PATH"
-          echo "$PWD/flutter/bin" >> $GITHUB_PATH
+      # 3. Setup JDK for Android builds (Crucial for Gradle)
+      - name: Setup Java/JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: "17" # JDK 17 is standard for recent Flutter/Android
+          distribution: "temurin"
 
-      # Ensure Flutter is on the path
+      # 4. Flutter doctor (Optional, for verification)
       - name: Flutter doctor
         run: flutter doctor -v
 
-      # Get dependencies
+      # 5. Get dependencies (Your original step 5)
       - name: Install Flutter packages
         run: flutter pub get
 
-      # Build release APK
+      # 6. Build release APK (Your original step 6)
       - name: Build APK
         run: flutter build apk --release
 
-      # Upload artifact to GitHub Actions (optional for debugging)
+      # 7. Upload artifact (Your original step 7)
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
           path: build/app/outputs/flutter-apk/*.apk
 
-      # 6. Create GitHub Release and attach APK
+      # 8. Create GitHub Release (Your original step 8)
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: build/app/outputs/flutter-apk/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-            
