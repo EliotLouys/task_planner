@@ -1,8 +1,4 @@
-
-enum TasksCategories {
-  personal,
-  professional,
-}
+enum TasksCategories { personal, professional }
 
 String getTasksCategoryName(TasksCategories category) {
   switch (category) {
@@ -13,10 +9,7 @@ String getTasksCategoryName(TasksCategories category) {
   }
 }
 
-enum ImportanceLevel {
-  important,
-  notImportant,
-}
+enum ImportanceLevel { important, notImportant }
 
 String getImportanceLevelName(ImportanceLevel level) {
   switch (level) {
@@ -27,10 +20,7 @@ String getImportanceLevelName(ImportanceLevel level) {
   }
 }
 
-enum UrgencyLevel {
-  urgent,
-  notUrgent,
-}
+enum UrgencyLevel { urgent, notUrgent }
 
 String getUrgencyLevelName(UrgencyLevel level) {
   switch (level) {
@@ -63,3 +53,5 @@ String getReminderValueName(ReminderValues value) {
       return '1 jour avant';
   }
 }
+
+enum AppThemeMode { light, dark, system }

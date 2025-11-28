@@ -18,18 +18,16 @@ void notificationTapBackground(NotificationResponse notificationResponse) {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await NotificationService.initialize(notificationTapBackground);
-  await NotificationService.scheduleDailyReminder();
-
   final tasksProvider = TasksProvider();
   final todayTasksProvider = TodayTasksProvider();
   final settingsProvider = SettingsProvider();
 
+  await settingsProvider.loadSettings();
+  await NotificationService.initialize(notificationTapBackground);
+  await NotificationService.scheduleDailyReminder();
   // 1. Establish the links between providers
   tasksProvider.setTodayTasksProvider(todayTasksProvider);
   todayTasksProvider.setTasksProvider(tasksProvider); // New link for loading
-
-  await settingsProvider.loadSettings();
 
   // 2. Load Main Tasks first
   await tasksProvider.loadTasks();

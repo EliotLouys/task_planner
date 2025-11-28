@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:zbeub_task_plan/data/enums.dart';
 import 'package:zbeub_task_plan/data/settings.dart';
 
 class SettingsPage extends StatelessWidget {

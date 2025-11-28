@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:zbeub_task_plan/data/enums.dart';
 import 'package:zbeub_task_plan/services/notification_service.dart';
 
 // --- Keys for Secure Storage ---
@@ -10,7 +11,6 @@ const String _kDailyReminderMinuteKey = 'settings_daily_reminder_minute';
 const String _kMaxTasksKey = 'settings_max_tasks';
 
 // A helper for managing the app's theme based on user preference
-enum AppThemeMode { light, dark, system }
 
 class SettingsProvider extends ChangeNotifier {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
@@ -39,45 +39,38 @@ class SettingsProvider extends ChangeNotifier {
 
   // --- Initializer/Loader ---
 
-  // Loads all stored settings on application startup
   Future<void> loadSettings() async {
-    // 1. Load Theme Mode (saved as string name)
-    final themeString = await _storage.read(key: _kThemeKey);
-    if (themeString != null) {
-      try {
+    try {
+      // 1. Load Theme Mode (saved as string name)
+      final themeString = await _storage.read(key: _kThemeKey);
+      if (themeString != null) {
         _currentThemeMode = AppThemeMode.values.byName(themeString);
-      } catch (_) {
-        _currentThemeMode = AppThemeMode.light;
       }
-    }
 
-    // 2. Load Daily Reminder Time (saved as separate hour and minute strings)
-    final hourString = await _storage.read(key: _kDailyReminderHourKey);
-    final minuteString = await _storage.read(key: _kDailyReminderMinuteKey);
+      // 2. Load Daily Reminder Time
+      final hourString = await _storage.read(key: _kDailyReminderHourKey);
+      final minuteString = await _storage.read(key: _kDailyReminderMinuteKey);
 
-    if (hourString != null && minuteString != null) {
-      try {
-        final hour = int.parse(hourString);
-        final minute = int.parse(minuteString);
-        _dailyReminderTime = TimeOfDay(hour: hour, minute: minute);
-      } catch (_) {
-        _dailyReminderTime = const TimeOfDay(hour: 10, minute: 0);
-      }
-    }
+      // Safely parse integers, providing defaults if null or invalid
+      final hour = int.tryParse(hourString ?? '') ?? 10;
+      final minute = int.tryParse(minuteString ?? '') ?? 0;
+      _dailyReminderTime = TimeOfDay(hour: hour, minute: minute);
 
-    // 3. Load Max Tasks (saved as string)
-    final maxTasksString = await _storage.read(key: _kMaxTasksKey);
-    if (maxTasksString != null) {
-      try {
-        _maxTasksForToday = int.parse(maxTasksString);
-      } catch (_) {
+      // 3. Load Max Tasks
+      final maxTasksString = await _storage.read(key: _kMaxTasksKey);
+      _maxTasksForToday = int.tryParse(maxTasksString ?? '') ?? 5;
+
+      // Ensure the loaded value is within limits (1-10)
+      if (_maxTasksForToday < 1 || _maxTasksForToday > 10) {
         _maxTasksForToday = 5;
       }
+    } catch (e) {
+      // CRITICAL Failsafe: If any SecureStorage operation fails on reload, we ensure defaults are kept
+      debugPrint('FATAL ERROR during settings loading on reload: $e');
     }
 
     notifyListeners();
   }
-
   // --- Mutators/Updaters ---
 
   // 1. Theme Mode
