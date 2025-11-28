@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:zbeub_task_plan/data/settings.dart';
 import 'package:zbeub_task_plan/data/tasks.dart';
 import 'package:zbeub_task_plan/data/enums.dart';
 import 'package:zbeub_task_plan/data/today_tasks.dart'; // Import new provider
@@ -25,17 +26,22 @@ class AllTasksPage extends StatelessWidget {
   });
 
   final String taskCategoryTitle; // e.g., 'tâches pro' or 'tâches persos'
-  final ImportanceLevel importance;        // e.g., 'Important'
-  final UrgencyLevel urgency;           // e.g., 'Urgent'
+  final ImportanceLevel importance; // e.g., 'Important'
+  final UrgencyLevel urgency; // e.g., 'Urgent'
 
-  static Route<void> route(String category, ImportanceLevel importance, UrgencyLevel urgency) {
+  static Route<void> route(
+    String category,
+    ImportanceLevel importance,
+    UrgencyLevel urgency,
+  ) {
     return MaterialPageRoute<void>(
       settings: const RouteSettings(name: '/AllTasksListPage'),
-      builder: (_) => AllTasksPage(
-        taskCategoryTitle: category,
-        importance: importance,
-        urgency: urgency,
-      ),
+      builder:
+          (_) => AllTasksPage(
+            taskCategoryTitle: category,
+            importance: importance,
+            urgency: urgency,
+          ),
     );
   }
 
@@ -47,25 +53,33 @@ class AllTasksPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${getImportanceLevelName(importance)} / ${getUrgencyLevelName(urgency)}'),
+        title: Text(
+          '${getImportanceLevelName(importance)} / ${getUrgencyLevelName(urgency)}',
+        ),
       ),
       // Use Multi-Consumer to listen to both tasksProvider and todayTasksProvider
       body: MultiProvider(
         providers: [
           ChangeNotifierProvider.value(value: context.read<TasksProvider>()),
-          ChangeNotifierProvider.value(value: context.read<TodayTasksProvider>()),
+          ChangeNotifierProvider.value(
+            value: context.read<TodayTasksProvider>(),
+          ),
+          ChangeNotifierProvider.value(value: context.read<SettingsProvider>()),
         ],
         child: Consumer2<TasksProvider, TodayTasksProvider>(
           builder: (context, tasksProvider, todayTasksProvider, child) {
+            final maxTasksLimit =
+                todayTasksProvider.maxTasks; // Read dynamic limit
 
             // Filter the main list of tasks
-            final filteredTasks = tasksProvider.tasks.where((task) {
-              final categoryMatch = task.category == filterCategory;
-              final importanceMatch = task.isImportant == filterImportance;
-              final urgencyMatch = task.isUrgent == filterUrgency;
+            final filteredTasks =
+                tasksProvider.tasks.where((task) {
+                  final categoryMatch = task.category == filterCategory;
+                  final importanceMatch = task.isImportant == filterImportance;
+                  final urgencyMatch = task.isUrgent == filterUrgency;
 
-              return categoryMatch && importanceMatch && urgencyMatch;
-            }).toList();
+                  return categoryMatch && importanceMatch && urgencyMatch;
+                }).toList();
 
             if (filteredTasks.isEmpty) {
               return Center(
@@ -84,18 +98,23 @@ class AllTasksPage extends StatelessWidget {
               itemBuilder: (context, index) {
                 final task = filteredTasks[index];
                 final isAddedToToday = todayTasksProvider.isTaskForToday(task);
-                final isTodayListFull = todayTasksProvider.tasksForToday.length >= TodayTasksProvider.maxTasks;
+                final isTodayListFull =
+                    todayTasksProvider.tasksForToday.length >= maxTasksLimit;
 
                 return Card(
                   elevation: 1,
-                  margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   child: ListTile(
                     title: Text(
                       task.title,
                       style: TextStyle(
-                        decoration: task.isCompleted
-                            ? TextDecoration.lineThrough
-                            : TextDecoration.none,
+                        decoration:
+                            task.isCompleted
+                                ? TextDecoration.lineThrough
+                                : TextDecoration.none,
                       ),
                     ),
                     subtitle: Text(
@@ -105,30 +124,44 @@ class AllTasksPage extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.delete_forever, color: AppTheme.deleteButtonColor),
+                          icon: const Icon(
+                            Icons.delete_forever,
+                            color: AppTheme.deleteButtonColor,
+                          ),
                           onPressed: () => tasksProvider.removeTask(task),
                         ),
 
                         // Button to add to Today's Tasks
                         IconButton(
                           icon: Icon(
-                            isAddedToToday ? Icons.remove_circle : Icons.add_circle,
+                            isAddedToToday
+                                ? Icons.remove_circle
+                                : Icons.add_circle,
                             color: isAddedToToday ? Colors.red : Colors.green,
                           ),
-                          onPressed: isAddedToToday || !isTodayListFull 
-                              ? () {
-                                  if (todayTasksProvider.toggleTaskForToday(task)) {
-                                    // Task added successfully or removed
-                                  } else {
-                                    // List is full and task was not removed
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text("La liste pour aujourd'hui est pleine (5 tâches max).")),
-                                    );
+                          onPressed:
+                              isAddedToToday || !isTodayListFull
+                                  ? () {
+                                    if (todayTasksProvider.toggleTaskForToday(
+                                      task,
+                                    )) {
+                                      // Task added successfully or removed
+                                    } else {
+                                      // List is full and task was not removed
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            "La liste pour aujourd'hui est pleine ($maxTasksLimit tâches max).",
+                                          ),
+                                        ),
+                                      );
+                                    }
                                   }
-                                }
-                              : null, // Disable if list is full and task is not present
+                                  : null, // Disable if list is full and task is not present
                         ),
-                        
+
                         // Checkbox for completion status
                         Checkbox(
                           value: task.isCompleted,
@@ -162,7 +195,7 @@ class AllTasksPage extends StatelessWidget {
             initialCategory: filterCategory,
             initialImportanceString: importance,
             initialUrgencyString: urgency,
-          );          
+          );
         },
         child: const Icon(Icons.add),
       ),

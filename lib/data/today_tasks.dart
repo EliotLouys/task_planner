@@ -1,20 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // ADDED
+import 'package:zbeub_task_plan/data/settings.dart';
 import 'package:zbeub_task_plan/data/tasks.dart';
 import 'dart:convert'; // ADDED
 
 class TodayTasksProvider extends ChangeNotifier {
-  static const int maxTasks = 10;
-  
   final List<Tasks> _tasksForToday = [];
   final _storage = FlutterSecureStorage(); // ADDED Storage instance
 
   // Dependency on TasksProvider to lookup full task objects
   TasksProvider? _tasksProvider;
+  SettingsProvider? _settingsProvider; // <--- NEW DEPENDENCY
 
   void setTasksProvider(TasksProvider provider) {
     _tasksProvider = provider;
   }
+
+  // Setter for the SettingsProvider
+  void setSettingsProvider(SettingsProvider provider) {
+    _settingsProvider = provider;
+    // Listen for changes in the SettingsProvider to update the UI
+    _settingsProvider!.addListener(_onSettingsChanged);
+  }
+
+  // Listener to notify this provider's listeners when the max tasks setting changes
+  void _onSettingsChanged() {
+    notifyListeners();
+  }
+
+  int get maxTasks =>
+      _settingsProvider?.maxTasksForToday ?? 5; // Default safety fallback to 5
 
   List<Tasks> get tasksForToday => List.unmodifiable(_tasksForToday);
 
@@ -29,25 +44,26 @@ class TodayTasksProvider extends ChangeNotifier {
     }
     final task = _tasksForToday.removeAt(oldIndex);
     _tasksForToday.insert(newIndex, task);
-    
+
     _saveTasksForToday();
     notifyListeners();
   }
-  
+
   // ADDED: Save task IDs instead of full task objects
   Future<void> _saveTasksForToday() async {
     final taskIds = _tasksForToday.map((t) => t.id).toList();
-    final tasksString = jsonEncode(taskIds); 
-    await _storage.write(key: 'today_tasks', value: tasksString); 
+    final tasksString = jsonEncode(taskIds);
+    await _storage.write(key: 'today_tasks', value: tasksString);
   }
 
   // ADDED: Load task IDs and look up full task objects from main list
   Future<void> loadTasksForToday() async {
     final tasksString = await _storage.read(key: 'today_tasks');
     if (tasksString != null && _tasksProvider != null) {
-      final List<dynamic> tasksIdJson = jsonDecode(tasksString) as List<dynamic>;
+      final List<dynamic> tasksIdJson =
+          jsonDecode(tasksString) as List<dynamic>;
       _tasksForToday.clear();
-      
+
       // Look up the full Tasks object in the main TasksProvider for each ID
       for (final id in tasksIdJson) {
         final task = _tasksProvider!.getTaskById(id as String);
@@ -92,7 +108,7 @@ class TodayTasksProvider extends ChangeNotifier {
   bool isTaskForToday(Tasks task) {
     return _findIndexById(task) != -1;
   }
-  
+
   void updateTask(Tasks oldTask, Tasks newTask) {
     final index = _findIndexById(oldTask);
     if (index != -1) {

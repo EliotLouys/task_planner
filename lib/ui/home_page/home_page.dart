@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:zbeub_task_plan/services/notification_service.dart';
 import 'package:zbeub_task_plan/theme/app_theme.dart';
 import 'package:zbeub_task_plan/ui/selection_page/selection_page.dart';
+import 'package:zbeub_task_plan/ui/settings_page/settings_page.dart';
 import 'package:zbeub_task_plan/ui/task_page/archive_page.dart';
 import 'package:zbeub_task_plan/ui/task_page/today_task_page.dart';
 
@@ -15,58 +15,60 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
-  
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         // AppBar style is now managed by AppTheme
         title: Text(widget.title),
-        ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(context, SettingsPage.route());
+            },
+            icon: Icon(Icons.settings),
+          ),
+        ],
+      ),
       body: Center(
-        child: 
-        Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // --- First Button: Tâches pros (New Color) ---
             ElevatedButton(
               onPressed: () {
-                Navigator.push(context, SelectionPage.route('tâches pro'),);
+                Navigator.push(context, SelectionPage.route('tâches pro'));
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.professionalCategoryColor, // Professional color (Blue)
+                backgroundColor:
+                    AppTheme
+                        .professionalCategoryColor, // Professional color (Blue)
                 foregroundColor: Colors.white,
               ),
-              child: const Text(
-                'Tâches pros',
-                textAlign: TextAlign.center,
-              ),
+              child: const Text('Tâches pros', textAlign: TextAlign.center),
             ),
             const SizedBox(height: 20), // Espacement entre les boutons
-            
             // --- Second Button: Tâches persos (New Color) ---
             ElevatedButton(
               onPressed: () {
-                Navigator.push(context, SelectionPage.route('tâches persos'),);
+                Navigator.push(context, SelectionPage.route('tâches persos'));
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.personalCategoryColor, // Personal color (Red/Pink)
+                backgroundColor:
+                    AppTheme.personalCategoryColor, // Personal color (Red/Pink)
                 foregroundColor: Colors.white,
               ),
-              child: const Text(
-                'Tâches persos',
-                textAlign: TextAlign.center,
-              ),
+              child: const Text('Tâches persos', textAlign: TextAlign.center),
             ),
 
             const SizedBox(height: 40), // More spacing for the third button
-
             // --- Third Button: Today's Tasks ---
             ElevatedButton(
               onPressed: () {
-                Navigator.push(context, TodayTasksPage.route(),); // Navigation to the new page
+                Navigator.push(
+                  context,
+                  TodayTasksPage.route(),
+                ); // Navigation to the new page
               },
               // This button uses the default ElevatedButton theme defined in AppTheme
               child: const Text(
@@ -74,32 +76,20 @@ class _MyHomePageState extends State<MyHomePage> {
                 textAlign: TextAlign.center,
               ),
             ),
-            
+
             const SizedBox(height: 40), // More spacing for the third button
 
             ElevatedButton(
               onPressed: () {
-                Navigator.push(context, ArchivePage.route(),); // Navigation to Archive Page
+                Navigator.push(
+                  context,
+                  ArchivePage.route(),
+                ); // Navigation to Archive Page
               },
-              child: const Text(
-                "Archives",
-                textAlign: TextAlign.center,
-              ),
+              child: const Text("Archives", textAlign: TextAlign.center),
             ),
-            const SizedBox(height: 20), // Espacement entre les boutons
-            ElevatedButton(onPressed: (){
-              NotificationService.showImmediateNotification();
-              },
-              
-              child: const Text(
-                "Tester Notification Immédiate",
-                textAlign: TextAlign.center,
-              ),
-            ),
-            
-
           ],
-        )
+        ),
       ),
     );
   }
