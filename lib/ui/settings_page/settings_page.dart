@@ -23,16 +23,16 @@ class SettingsPage extends StatelessWidget {
     // 1. Basic validation and check if the value actually changed
     if (parsedValue != null &&
         parsedValue >= 1 &&
-        parsedValue <= 10 &&
+        parsedValue <= 20 &&
         parsedValue != settings.maxTasksForToday) {
       settings.setMaxTasks(parsedValue); // Save and notify listeners
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Maximum de tâches défini à $parsedValue.')),
       );
-    } else if (parsedValue != null && (parsedValue < 1 || parsedValue > 10)) {
+    } else if (parsedValue != null && (parsedValue < 1 || parsedValue > 20)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Veuillez entrer un nombre entre 1 et 10.'),
+          content: Text('Veuillez entrer un nombre entre 1 et 20.'),
         ),
       );
     }
@@ -123,7 +123,7 @@ class SettingsPage extends StatelessWidget {
           // 3. Maximum de Tâches pour Aujourd'hui
           ListTile(
             title: const Text('Maximum de Tâches pour Aujourd\'hui'),
-            subtitle: const Text('Nombre maximum de tâches autorisées (1-10).'),
+            subtitle: const Text('Nombre maximum de tâches autorisées (1-20).'),
             trailing: SizedBox(
               width: 60,
               child: TextFormField(
