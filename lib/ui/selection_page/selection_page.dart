@@ -14,8 +14,7 @@ TasksCategories _stringToCategory(String title) {
   return TasksCategories.personal;
 }
 
-class SelectionPage extends StatefulWidget{
-
+class SelectionPage extends StatefulWidget {
   const SelectionPage({super.key, required this.title});
 
   final String title;
@@ -23,37 +22,37 @@ class SelectionPage extends StatefulWidget{
   static Route<void> route(String title) {
     return MaterialPageRoute<void>(
       settings: const RouteSettings(name: '/SelectionPage'),
-      builder: (_) => SelectionPage(title: title ),
+      builder: (_) => SelectionPage(title: title),
     );
   }
 
   @override
   State<SelectionPage> createState() => _SelectionPageState();
-  
 }
 
-class _SelectionPageState extends State<SelectionPage>{
-  
- Widget _buildClickableCard({
+class _SelectionPageState extends State<SelectionPage> {
+  Widget _buildClickableCard({
     required TasksProvider tasksProvider,
     required ImportanceLevel importance,
     required UrgencyLevel urgency,
     required TasksCategories category,
   }) {
-    
     final importanceName = getImportanceLevelName(importance);
     final urgencyName = getUrgencyLevelName(urgency);
-    final quadrantColor = AppTheme.getQuadrantColor(importance: importance, urgency: urgency);
-    
+    final quadrantColor = AppTheme.getQuadrantColor(
+      importance: importance,
+      urgency: urgency,
+    );
+
     // CALCUL : Filtrer les tâches actives (non archivées/non complétées)
-    final taskCount = tasksProvider.tasks.where((task) {
-      return task.category == category &&
-             task.isImportant == importance &&
-             task.isUrgent == urgency;
-    }).length;
-    
-    return 
-    Card(
+    final taskCount =
+        tasksProvider.tasks.where((task) {
+          return task.category == category &&
+              task.isImportant == importance &&
+              task.isUrgent == urgency;
+        }).length;
+
+    return Card(
       elevation: 5,
       margin: const EdgeInsets.all(8.0),
       color: quadrantColor,
@@ -62,7 +61,8 @@ class _SelectionPageState extends State<SelectionPage>{
         onTap: () {
           Navigator.push(
             context,
-            AllTasksPage.route( // Utilise la route mise à jour pour la liste des tâches
+            AllTasksPage.route(
+              // Utilise la route mise à jour pour la liste des tâches
               widget.title,
               importance,
               urgency,
@@ -74,30 +74,30 @@ class _SelectionPageState extends State<SelectionPage>{
           padding: const EdgeInsets.all(16.0),
           child: Column(
             // Changé à spaceBetween pour placer le compteur en bas
-            mainAxisAlignment: MainAxisAlignment.center, 
+            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               // Texte 1 (Titre: Importance)
               Text(
-                importanceName,
+                urgencyName == "Urgent" ? urgencyName : importanceName,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Colors.white.withOpacity(0.9),
                 ),
               ),
               const SizedBox(height: 8),
               // Texte 2 (Sous-titre: Urgence)
               Text(
-                urgencyName,
+                urgencyName == "Urgent" ? importanceName : urgencyName,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.white.withOpacity(0.8),
                 ),
               ),
-              
+
               Text(
                 'Tâches restantes: $taskCount',
                 textAlign: TextAlign.center,
@@ -115,29 +115,26 @@ class _SelectionPageState extends State<SelectionPage>{
 
   @override
   Widget build(BuildContext context) {
+    final currentCategory = _stringToCategory(widget.title);
 
-    final currentCategory = _stringToCategory(widget.title);    
-    
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Classes des ${widget.title}'),
-      ),
+      appBar: AppBar(title: Text('Classes des ${widget.title}')),
       // GridView fills the remaining screen space
-      body: Consumer<TasksProvider>(builder: (context, tasksProvider, child){
-
-      return GridView.count(
-        // Creates a 2x2 grid (2 columns)
-        crossAxisCount: 2,
-        // The children will be equally sized to fill the space
-        children: <Widget>[
-          // --- Card 1: Important / Urgent ---
+      body: Consumer<TasksProvider>(
+        builder: (context, tasksProvider, child) {
+          return GridView.count(
+            // Creates a 2x2 grid (2 columns)
+            crossAxisCount: 2,
+            // The children will be equally sized to fill the space
+            children: <Widget>[
+              // --- Card 1: Important / Urgent ---
               _buildClickableCard(
                 tasksProvider: tasksProvider,
                 category: currentCategory,
                 importance: ImportanceLevel.important,
                 urgency: UrgencyLevel.urgent,
               ),
-              
+
               // --- Card 2: Pas important / Urgent ---
               _buildClickableCard(
                 tasksProvider: tasksProvider,
@@ -145,8 +142,7 @@ class _SelectionPageState extends State<SelectionPage>{
                 importance: ImportanceLevel.notImportant,
                 urgency: UrgencyLevel.urgent,
               ),
-              
-              
+
               // --- Card 3: Important / Pas urgent ---
               _buildClickableCard(
                 tasksProvider: tasksProvider,
@@ -154,7 +150,7 @@ class _SelectionPageState extends State<SelectionPage>{
                 importance: ImportanceLevel.important,
                 urgency: UrgencyLevel.notUrgent,
               ),
-              
+
               // --- Card 4: Pas important / Pas urgent ---
               _buildClickableCard(
                 tasksProvider: tasksProvider,
@@ -163,11 +159,9 @@ class _SelectionPageState extends State<SelectionPage>{
                 urgency: UrgencyLevel.notUrgent,
               ),
             ],
-      );
-      }
+          );
+        },
       ),
     );
   }
 }
-
-

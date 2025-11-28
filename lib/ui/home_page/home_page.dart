@@ -40,10 +40,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 Navigator.push(context, SelectionPage.route('tâches pro'));
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    AppTheme
-                        .professionalCategoryColor, // Professional color (Blue)
-                foregroundColor: Colors.white,
+                backgroundColor: AppTheme.professionalCategoryColor,
               ),
               child: const Text('Tâches pros', textAlign: TextAlign.center),
             ),
@@ -54,9 +51,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 Navigator.push(context, SelectionPage.route('tâches persos'));
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    AppTheme.personalCategoryColor, // Personal color (Red/Pink)
-                foregroundColor: Colors.white,
+                backgroundColor: AppTheme.personalCategoryColor,
               ),
               child: const Text('Tâches persos', textAlign: TextAlign.center),
             ),

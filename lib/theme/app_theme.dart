@@ -173,7 +173,8 @@ class AppTheme {
       100,
       130,
     ); // Lighter version of 218, 3, 56 for visibility
-
+    const Color softWhiteText =
+        Colors.black87; // This is a standard greyish white
     final baseTheme = ThemeData(
       // Use the standard dark mode for the base
       brightness: Brightness.dark,
@@ -197,7 +198,7 @@ class AppTheme {
       // 1. AppBar Styling
       appBarTheme: AppBarTheme(
         backgroundColor: darkBackground, // Dark AppBar
-        foregroundColor: Colors.white,
+        foregroundColor: Colors.white70,
         centerTitle: true,
         elevation: 4,
       ),
@@ -211,7 +212,7 @@ class AppTheme {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           backgroundColor: darkPrimary, // Uses the darkPrimary
-          foregroundColor: Colors.white,
+          foregroundColor: softWhiteText,
           textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
       ),
