@@ -24,7 +24,7 @@ jobs:
         with:
           # Use a newer stable version compatible with your pubspec.yaml constraints
           # Using 'stable' is usually best, or target the latest version in the 3.35.0+ range.
-          flutter-version: "3.22.x" # Or 'stable' if you want the very latest
+          flutter-version: "3.38.x" # Targeting Flutter 3.38 or later
           channel: "stable"
           cache: true
 
