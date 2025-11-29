@@ -66,11 +66,8 @@ class AllTasksPage extends StatelessWidget {
           ),
           ChangeNotifierProvider.value(value: context.read<SettingsProvider>()),
         ],
-        child: Consumer2<TasksProvider, TodayTasksProvider>(
-          builder: (context, tasksProvider, todayTasksProvider, child) {
-            final maxTasksLimit =
-                todayTasksProvider.maxTasks; // Read dynamic limit
-
+        child: Consumer3<TasksProvider, TodayTasksProvider, SettingsProvider>(
+          builder: (context, tasksProvider, todayTasksProvider, settingsProvider, child) {
             // Filter the main list of tasks
             final filteredTasks =
                 tasksProvider.tasks.where((task) {
@@ -98,8 +95,8 @@ class AllTasksPage extends StatelessWidget {
               itemBuilder: (context, index) {
                 final task = filteredTasks[index];
                 final isAddedToToday = todayTasksProvider.isTaskForToday(task);
-                final isTodayListFull =
-                    todayTasksProvider.tasksForToday.length >= maxTasksLimit;
+                final maxTasksLimit = settingsProvider.maxTasksForToday;
+                final isTodayListFull = todayTasksProvider.tasksForToday.length >= maxTasksLimit;
 
                 return Card(
                   elevation: 1,
@@ -144,6 +141,7 @@ class AllTasksPage extends StatelessWidget {
                                   ? () {
                                     if (todayTasksProvider.toggleTaskForToday(
                                       task,
+                                      maxTasksLimit
                                     )) {
                                       // Task added successfully or removed
                                     } else {
@@ -152,6 +150,7 @@ class AllTasksPage extends StatelessWidget {
                                         context,
                                       ).showSnackBar(
                                         SnackBar(
+                                          duration: Duration(seconds: 1),
                                           content: Text(
                                             "La liste pour aujourd'hui est pleine ($maxTasksLimit tâches max).",
                                           ),

@@ -74,7 +74,7 @@ class SettingsPage extends StatelessWidget {
     // Using a TextEditingController to manage the field's value
     // and initialize it with the current provider state.
     final maxTasksController = TextEditingController(
-      text: settingsProvider.maxTasksForToday.toString(),
+      text: "${settingsProvider.maxTasksForToday}"
     );
 
     // FocusNode for detecting when the user leaves the field

@@ -19,14 +19,9 @@ class TodayTasksProvider extends ChangeNotifier {
   // Setter for the SettingsProvider
   void setSettingsProvider(SettingsProvider provider) {
     _settingsProvider = provider;
-    // Listen for changes in the SettingsProvider to update the UI
-    _settingsProvider!.addListener(_onSettingsChanged);
   }
 
-  // Listener to notify this provider's listeners when the max tasks setting changes
-  void _onSettingsChanged() {
-    notifyListeners();
-  }
+
 
   int get maxTasks =>
       _settingsProvider?.maxTasksForToday ?? 5; // Default safety fallback to 5
@@ -75,8 +70,9 @@ class TodayTasksProvider extends ChangeNotifier {
     }
   }
 
-  bool addTaskToToday(Tasks task) {
-    if (_tasksForToday.length < maxTasks && _findIndexById(task) == -1) {
+  bool addTaskToToday(Tasks task, int maxLimit) {
+
+    if (_tasksForToday.length < maxLimit && _findIndexById(task) == -1) {
       _tasksForToday.add(task);
       _saveTasksForToday(); // Call save on mutation
       notifyListeners();
@@ -94,13 +90,13 @@ class TodayTasksProvider extends ChangeNotifier {
     }
   }
 
-  bool toggleTaskForToday(Tasks task) {
+  bool toggleTaskForToday(Tasks task, int maxLimit) {
     final index = _findIndexById(task);
     if (index != -1) {
       removeTaskFromToday(task);
       return false;
     } else {
-      final success = addTaskToToday(task);
+      final success = addTaskToToday(task,maxLimit);
       return success;
     }
   }
