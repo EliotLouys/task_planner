@@ -37,11 +37,11 @@ android {
 
         // ADD a RELEASE config to be populated by environment variables/secrets in CI
         create("release") {
-             // The values below must match the hardcoded strings we set in ci.yml
-             keyAlias.set(System.getenv("RELEASE_KEY_ALIAS") ?: "release_key")
-             keyPassword.set(System.getenv("RELEASE_KEY_PASSWORD") ?: "password")
-             storeFile.set(file(System.getenv("RELEASE_STORE_FILE") ?: "app_release.jks"))
-             storePassword.set(System.getenv("RELEASE_STORE_PASSWORD") ?: "password")
+             // FIX: Change all instances of .set(...) to the direct assignment operator (=)
+             keyAlias = System.getenv("RELEASE_KEY_ALIAS") ?: "release_key"
+             keyPassword = System.getenv("RELEASE_KEY_PASSWORD") ?: "password"
+             storeFile = file(System.getenv("RELEASE_STORE_FILE") ?: "app_release.jks")
+             storePassword = System.getenv("RELEASE_STORE_PASSWORD") ?: "password"
         }
     }
 
