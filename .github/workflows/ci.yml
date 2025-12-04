@@ -51,7 +51,7 @@ jobs:
             -keypass $KEY_PSW \
             -storepass $STORE_PSW \
             -keyalg RSA -keysize 2048 -validity 10000 
-            -dname "CN=Eliot, OU=Personal, O=TaskPlanner, L=Local, ST=NA, C=FR"
+            -dname "CN=Eliot, OU=Personal, O=TaskPlanner, L=Local, ST=NA, C=FR" || true
 
           # 2. Encode the key to Base64 and print it
           echo "--- START KEY BASE64 ---"
