@@ -24,10 +24,13 @@ void main() async {
 
   await settingsProvider.loadSettings();
   await NotificationService.initialize(notificationTapBackground);
-  await NotificationService.scheduleDailyReminder();
+  await NotificationService.scheduleDailyReminder(
+    scheduledTime: settingsProvider.dailyReminderTime,
+  );
   // 1. Establish the links between providers
   tasksProvider.setTodayTasksProvider(todayTasksProvider);
   todayTasksProvider.setTasksProvider(tasksProvider); // New link for loading
+  todayTasksProvider.setSettingsProvider(settingsProvider);
 
   // 2. Load Main Tasks first
   await tasksProvider.loadTasks();

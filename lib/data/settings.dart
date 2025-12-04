@@ -61,7 +61,7 @@ class SettingsProvider extends ChangeNotifier {
       _maxTasksForToday = int.tryParse(maxTasksString ?? '') ?? 5;
 
       // Ensure the loaded value is within limits (1-10)
-      if (_maxTasksForToday < 1 || _maxTasksForToday > 10) {
+      if (_maxTasksForToday < 1 || _maxTasksForToday > 20) {
         _maxTasksForToday = 5;
       }
     } catch (e) {
