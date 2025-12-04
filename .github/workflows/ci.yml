@@ -44,22 +44,31 @@ jobs:
           STORE_PSW="password"
           KEY_PSW="password"
 
-          # 1. Generate the Keystore file (app_release.jks)
-          yes | keytool -genkey -v \
+          # 1. FIX: Use HEREDOC to force non-interactive key generation, 
+          # providing answers for the passwords and the final confirmation.
+          keytool -genkey -v \
             -keystore $KEY_FILE \
             -alias $KEY_ALIAS \
             -keypass $KEY_PSW \
             -storepass $STORE_PSW \
-            -keyalg RSA -keysize 2048 -validity 10000 
-            -dname "CN=Eliot, OU=Personal, O=TaskPlanner, L=Local, ST=NA, C=FR" || true
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -dname "CN=Eliot, OU=Personal, O=TaskPlanner, L=Local, ST=NA, C=FR" \
+            <<EOF
+            
+          EOF
+            
+          # 2. Encode the key to Base64 and print it.
+          if [ -f "$KEY_FILE" ]; then
+              echo "--- START KEY BASE64 ---"
+              base64 "$KEY_FILE" | tr -d '\n'
+              echo 
+              echo "--- END KEY BASE64 ---"
+          else
+              echo "FATAL ERROR: Keystore file was not created."
+              exit 1
+          fi
 
-          # 2. Encode the key to Base64 and print it
-          echo "--- START KEY BASE64 ---"
-          base64 $KEY_FILE | tr -d '\n'
-          echo 
-          echo "--- END KEY BASE64 ---"
-
-          # We need to fail the workflow here so the apk is NOT built yet
+          # Force fail after printing the key to prevent running the next build step
           exit 1
         shell: bash
 
