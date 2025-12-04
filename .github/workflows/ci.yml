@@ -45,7 +45,7 @@ jobs:
           KEY_PSW="password"
 
           # 1. Generate the Keystore file (app_release.jks)
-          printf "yes\n" | keytool -genkey -v \
+          yes | keytool -genkey -v \
             -keystore $KEY_FILE \
             -alias $KEY_ALIAS \
             -keypass $KEY_PSW \
