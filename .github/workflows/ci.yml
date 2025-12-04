@@ -35,7 +35,7 @@ jobs:
           java-version: "17" # JDK 17 is standard for recent Flutter/Android
           distribution: "temurin"
 
-      - name: TEMP: Generate and Print Base64 Signing Key
+      - name: TEMP Generate and Print Base64 Signing Key
         if: startsWith(github.ref, 'refs/tags/v')
         id: generate_key
         run: |
@@ -43,7 +43,7 @@ jobs:
           KEY_ALIAS="release_key"
           STORE_PSW="password"
           KEY_PSW="password"
-          
+
           # 1. Generate the Keystore file (app_release.jks)
           keytool -genkey -v \
             -keystore $KEY_FILE \
@@ -57,11 +57,11 @@ jobs:
           base64 $KEY_FILE | tr -d '\n'
           echo 
           echo "--- END KEY BASE64 ---"
-          
+
           # We need to fail the workflow here so the apk is NOT built yet
           exit 1
         shell: bash
-        
+
       # 4. Flutter doctor (Optional, for verification)
       - name: Flutter doctor
         run: flutter doctor -v
