@@ -33,3 +33,15 @@
 
 # Preserve the generated plugin registrar.
 -keep class io.flutter.plugins.GeneratedPluginRegistrant
+
+# =========================================================================
+# FLUTTER SECURE STORAGE - CRITICAL FOR PERSISTENCE
+# Keeps native classes used for Keystore/EncryptedSharedPreferences.
+# =========================================================================
+
+# For the core plugin components
+-keep class com.it_surfs_up.flutter_secure_storage.** { *; }
+-keep class com.it_nomads.fluttersecurestorage.** { *; }
+
+# For the necessary AndroidX crypto/security libraries
+-keep class androidx.security.crypto.** { *; }
