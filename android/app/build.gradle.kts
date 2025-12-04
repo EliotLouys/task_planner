@@ -31,10 +31,24 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        // KEEP the debug config for local debug builds
+        getByName("debug")
+
+        // ADD a RELEASE config to be populated by environment variables/secrets in CI
+        create("release") {
+             // The values below must match the hardcoded strings we set in ci.yml
+             keyAlias.set(System.getenv("RELEASE_KEY_ALIAS") ?: "release_key")
+             keyPassword.set(System.getenv("RELEASE_KEY_PASSWORD") ?: "password")
+             storeFile.set(file(System.getenv("RELEASE_STORE_FILE") ?: "app_release.jks"))
+             storePassword.set(System.getenv("RELEASE_STORE_PASSWORD") ?: "password")
+        }
+    }
+
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("debug")
-            
+            signingConfig = signingConfigs.getByName("release")      
+
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
