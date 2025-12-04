@@ -45,14 +45,14 @@ jobs:
           KEY_PSW="password"
 
           # 1. Generate the Keystore file (app_release.jks)
-          keytool -genkey -v \
+          printf "yes\n" | keytool -genkey -v \
             -keystore $KEY_FILE \
             -alias $KEY_ALIAS \
             -keypass $KEY_PSW \
             -storepass $STORE_PSW \
             -keyalg RSA -keysize 2048 -validity 10000 
             -dname "CN=Eliot, OU=Personal, O=TaskPlanner, L=Local, ST=NA, C=FR"
-            
+
           # 2. Encode the key to Base64 and print it
           echo "--- START KEY BASE64 ---"
           base64 $KEY_FILE | tr -d '\n'
