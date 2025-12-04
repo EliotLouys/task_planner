@@ -55,7 +55,7 @@ jobs:
         env:
           RELEASE_KEY_ALIAS: release_key
           RELEASE_KEY_PASSWORD: password
-          RELEASE_STORE_FILE: android/app/app_release.jks
+          RELEASE_STORE_FILE: app_release.jks
           RELEASE_STORE_PASSWORD: password
 
       # 7. Upload artifact (Your original step 7)
