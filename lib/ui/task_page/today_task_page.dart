@@ -6,7 +6,8 @@ import 'package:zbeub_task_plan/data/tasks.dart';
 import 'package:zbeub_task_plan/theme/app_theme.dart';
 import 'package:zbeub_task_plan/ui/forms/task_form.dart';
 
-class TodayTasksPage extends StatelessWidget {
+// 1. Convert to StatefulWidget to handle the "Animation Delay" state
+class TodayTasksPage extends StatefulWidget {
   const TodayTasksPage({super.key});
 
   static Route<void> route() {
@@ -17,6 +18,41 @@ class TodayTasksPage extends StatelessWidget {
   }
 
   @override
+  State<TodayTasksPage> createState() => _TodayTasksPageState();
+}
+
+class _TodayTasksPageState extends State<TodayTasksPage> {
+  // 2. We keep track of tasks that are currently "animating out"
+  final Set<String> _animatingTaskIds = {};
+
+  // Helper function to handle the delay
+  Future<void> _handleTaskActionWithDelay({
+    required String taskId,
+    required Future<void> Function() onAction,
+  }) async {
+    // A. Mark as animating (triggers the visual shrink)
+    setState(() {
+      _animatingTaskIds.add(taskId);
+    });
+
+    // B. Wait for your animation duration (1500ms as per your code)
+    await Future.delayed(const Duration(milliseconds: 1500));
+
+    // Check if user left the screen
+    if (!mounted) return;
+
+    // C. ACTUAL Data Update (Provider)
+    await onAction();
+
+    // D. Cleanup (though the item is likely gone from the list now)
+    if (mounted) {
+      setState(() {
+        _animatingTaskIds.remove(taskId);
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Tâches pour Aujourd'hui")),
@@ -24,12 +60,18 @@ class TodayTasksPage extends StatelessWidget {
         builder: (context, todayTasksProvider, tasksProvider, child) {
           final tasks = todayTasksProvider.tasksForToday;
 
-          if (tasks.isEmpty) {
+          // 3. LOGIC FIX:
+          // We only show the Empty Message if the list is empty AND nothing is currently animating.
+          // This keeps the ListView alive while the last item shrinks.
+          final activeTasksCount =
+              tasks.where((element) => !element.isCompleted).length;
+          final isTrulyEmpty =
+              activeTasksCount == 0 && _animatingTaskIds.isEmpty;
+
+          if (isTrulyEmpty) {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
-                // 2. Use Selector to explicitly watch the maxTasksForToday value from SettingsProvider.
-                // This ensures an immediate rebuild of the Text widget whenever the setting is changed.
                 child: Selector<SettingsProvider, int>(
                   selector: (_, settings) => settings.maxTasksForToday,
                   builder: (ctx, maxTasks, __) {
@@ -49,54 +91,44 @@ class TodayTasksPage extends StatelessWidget {
             onReorder: (int oldIndex, int newIndex) {
               todayTasksProvider.reorderTasks(oldIndex, newIndex);
             },
-
             itemBuilder: (context, index) {
               final task = tasks[index];
               final categoryColor = AppTheme.getCategoryColor(task.category);
-              // --- ANIMATION LOGIC START ---
-              final bool isCompleted = task.isCompleted;
-              // Fixed height for a 3-line ListTile + padding/margins
+
+              // 4. CHECK BOTH: Is it completed in data? OR is it currently animating out?
+              final bool isAnimating = _animatingTaskIds.contains(task.id);
+              final bool isCompleted = task.isCompleted || isAnimating;
+
               const double cardHeight = 100.0;
-              // 6.0 vertical margin on Card in original implementation.
-              // We use 100.0 + 2*6.0 = 112.0 as the target open height.
               final double targetHeight = isCompleted ? 0.0 : cardHeight + 12.0;
               final double targetMarginVertical = isCompleted ? 0.0 : 6.0;
 
               return AnimatedContainer(
-                key: ValueKey(
-                  task.id,
-                ), // Key MUST be here for ReorderableListView
+                key: ValueKey(task.id),
                 duration: const Duration(milliseconds: 1500),
                 curve: Curves.easeInOutCubic,
                 height: targetHeight,
-                // Use padding to simulate margin collapse
                 padding: EdgeInsets.symmetric(
                   horizontal: 10,
                   vertical: targetMarginVertical,
                 ),
-
                 child: ClipRect(
-                  // Clips the content as it shrinks/expands
                   child: AnimatedOpacity(
                     opacity: isCompleted ? 0.0 : 1.0,
                     duration: const Duration(milliseconds: 1500),
                     curve: Curves.easeOut,
-                    // 3. The actual Card content (must contain the drag listener)
                     child: Card(
                       elevation: 1,
-                      // Margin is controlled by the AnimatedContainer padding above
                       margin: EdgeInsets.zero,
                       color: AppTheme.getQuadrantColor(
                         importance: task.isImportant,
                         urgency: task.isUrgent,
                       ),
-                      // Enforce a minimum height for predictable animation
                       child: SizedBox(
                         height: cardHeight,
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Category color strip
                             Container(
                               width: 8,
                               height: double.infinity,
@@ -109,9 +141,7 @@ class TodayTasksPage extends StatelessWidget {
                                 ),
                               ),
                             ),
-
                             Expanded(
-                              // 4. RESTORED: ReorderableDelayedDragStartListener (for long-press drag)
                               child: ReorderableDelayedDragStartListener(
                                 index: index,
                                 child: ListTile(
@@ -122,12 +152,11 @@ class TodayTasksPage extends StatelessWidget {
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       decoration:
-                                          task.isCompleted
+                                          isCompleted
                                               ? TextDecoration.lineThrough
                                               : TextDecoration.none,
                                     ),
                                   ),
-                                  // ... (rest of subtitle and trailing content is here)
                                   subtitle: Text(
                                     'Échéance: ${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year} à ${task.dueDate.hour.toString().padLeft(2, '0')}:${task.dueDate.minute.toString().padLeft(2, '0')}',
                                     maxLines: 2,
@@ -140,7 +169,7 @@ class TodayTasksPage extends StatelessWidget {
                                         CrossAxisAlignment.center,
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      // 2. Delete Button
+                                      // DELETE BUTTON
                                       IconButton(
                                         icon: const Icon(
                                           Icons.delete_forever,
@@ -152,12 +181,17 @@ class TodayTasksPage extends StatelessWidget {
                                           minWidth: 22,
                                           minHeight: 28,
                                         ),
-                                        onPressed:
-                                            () =>
-                                                tasksProvider.removeTask(task),
+                                        onPressed: () {
+                                          // Trigger delay before deleting
+                                          _handleTaskActionWithDelay(
+                                            taskId: task.id,
+                                            onAction:
+                                                () async => tasksProvider
+                                                    .removeTask(task),
+                                          );
+                                        },
                                       ),
-
-                                      // 3. Remove from Today's List button
+                                      // REMOVE FROM TODAY BUTTON
                                       IconButton(
                                         icon: const Icon(
                                           Icons.remove_circle,
@@ -170,19 +204,30 @@ class TodayTasksPage extends StatelessWidget {
                                           minHeight: 28,
                                         ),
                                         onPressed: () {
-                                          todayTasksProvider
-                                              .removeTaskFromToday(task);
+                                          // Trigger delay before removing
+                                          _handleTaskActionWithDelay(
+                                            taskId: task.id,
+                                            onAction:
+                                                () async => todayTasksProvider
+                                                    .removeTaskFromToday(task),
+                                          );
                                         },
                                       ),
-
-                                      // 4. Checkbox
+                                      // CHECKBOX
                                       Transform.scale(
                                         scale: 0.8,
                                         child: Checkbox(
-                                          value: task.isCompleted,
+                                          value:
+                                              isCompleted, // Use our combined bool
                                           onChanged: (_) {
-                                            tasksProvider.toggleTaskCompletion(
-                                              task,
+                                            // Trigger delay before toggling completion
+                                            _handleTaskActionWithDelay(
+                                              taskId: task.id,
+                                              onAction:
+                                                  () async => tasksProvider
+                                                      .toggleTaskCompletion(
+                                                        task,
+                                                      ),
                                             );
                                           },
                                           visualDensity: VisualDensity.compact,
@@ -193,13 +238,16 @@ class TodayTasksPage extends StatelessWidget {
                                     ],
                                   ),
                                   onTap: () {
-                                    showTaskFormModal(
-                                      context,
-                                      initialCategory: task.category,
-                                      initialImportanceString: task.isImportant,
-                                      initialUrgencyString: task.isUrgent,
-                                      taskToEdit: task,
-                                    );
+                                    if (!isCompleted) {
+                                      showTaskFormModal(
+                                        context,
+                                        initialCategory: task.category,
+                                        initialImportanceString:
+                                            task.isImportant,
+                                        initialUrgencyString: task.isUrgent,
+                                        taskToEdit: task,
+                                      );
+                                    }
                                   },
                                 ),
                               ),
