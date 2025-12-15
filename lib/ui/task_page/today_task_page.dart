@@ -53,124 +53,174 @@ class TodayTasksPage extends StatelessWidget {
             itemBuilder: (context, index) {
               final task = tasks[index];
               final categoryColor = AppTheme.getCategoryColor(task.category);
+              // --- ANIMATION LOGIC START ---
+              final bool isCompleted = task.isCompleted;
+              // Fixed height for a 3-line ListTile + padding/margins
+              const double cardHeight = 100.0;
+              // 6.0 vertical margin on Card in original implementation.
+              // We use 100.0 + 2*6.0 = 112.0 as the target open height.
+              final double targetHeight = isCompleted ? 0.0 : cardHeight + 12.0;
+              final double targetMarginVertical = isCompleted ? 0.0 : 6.0;
 
-              return Card(
-                key: ValueKey(task.id),
-                elevation: 1,
-                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                color: AppTheme.getQuadrantColor(
-                  importance: task.isImportant,
-                  urgency: task.isUrgent,
+              return AnimatedContainer(
+                key: ValueKey(
+                  task.id,
+                ), // Key MUST be here for ReorderableListView
+                duration: const Duration(milliseconds: 1000),
+                curve: Curves.easeInOutCubic,
+                height: targetHeight,
+                // Use padding to simulate margin collapse
+                padding: EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: targetMarginVertical,
                 ),
-                child: IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Category color strip
-                      Container(
-                        width: 8,
-                        height: double.infinity,
-                        decoration: BoxDecoration(
-                          color: categoryColor,
-                          borderRadius: const BorderRadius.horizontal(
-                            left: Radius.circular(AppTheme.cardBorderRadius),
-                          ),
-                        ),
-                      ),
 
-                      Expanded(
-                        child: ReorderableDelayedDragStartListener(
-                          index: index, // Pass the current list index
-                          child: ListTile(
-                            isThreeLine: true,
-                            title: Text(
-                              task.title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                decoration:
-                                    task.isCompleted
-                                        ? TextDecoration.lineThrough
-                                        : TextDecoration.none,
+                child: ClipRect(
+                  // Clips the content as it shrinks/expands
+                  child: AnimatedOpacity(
+                    opacity: isCompleted ? 0.0 : 1.0,
+                    duration: const Duration(milliseconds: 1000),
+                    curve: Curves.easeOut,
+
+                    // 2. Slide animation (Horizontal exit)
+                    child: Transform.translate(
+                      offset:
+                          isCompleted
+                              ? const Offset(-200, 0) // Slide off to the left
+                              : Offset.zero,
+
+                      // 3. The actual Card content (must contain the drag listener)
+                      child: Card(
+                        elevation: 1,
+                        // Margin is controlled by the AnimatedContainer padding above
+                        margin: EdgeInsets.zero,
+                        color: AppTheme.getQuadrantColor(
+                          importance: task.isImportant,
+                          urgency: task.isUrgent,
+                        ),
+                        // Enforce a minimum height for predictable animation
+                        child: SizedBox(
+                          height: cardHeight,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // Category color strip
+                              Container(
+                                width: 8,
+                                height: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: categoryColor,
+                                  borderRadius: const BorderRadius.horizontal(
+                                    left: Radius.circular(
+                                      AppTheme.cardBorderRadius,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                            subtitle: Text(
-                              'Échéance: ${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year} à ${task.dueDate.hour.toString().padLeft(2, '0')}:${task.dueDate.minute.toString().padLeft(2, '0')}',
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                // 2. Delete Button (Smaller icon, minimal padding/constraints)
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.delete_forever,
-                                    color: Colors.grey,
-                                  ),
-                                  iconSize: 20.0, // Reduced icon size
-                                  padding:
-                                      EdgeInsets.zero, // Remove default padding
-                                  constraints: const BoxConstraints(
-                                    minWidth: 22,
-                                    minHeight: 28,
-                                  ), // Aggressively minimal constraints
-                                  onPressed:
-                                      () => tasksProvider.removeTask(task),
-                                ),
 
-                                // 3. Remove from Today's List button (Smaller icon, minimal padding/constraints)
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.remove_circle,
-                                    color: Colors.red,
-                                  ),
-                                  iconSize: 20.0, // Reduced icon size
-                                  padding:
-                                      EdgeInsets.zero, // Remove default padding
-                                  constraints: const BoxConstraints(
-                                    minWidth: 22,
-                                    minHeight: 28,
-                                  ), // Aggressively minimal constraints
-                                  onPressed: () {
-                                    todayTasksProvider.removeTaskFromToday(
-                                      task,
-                                    );
-                                  },
-                                ),
+                              Expanded(
+                                // 4. RESTORED: ReorderableDelayedDragStartListener (for long-press drag)
+                                child: ReorderableDelayedDragStartListener(
+                                  index: index,
+                                  child: ListTile(
+                                    isThreeLine: true,
+                                    title: Text(
+                                      task.title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        decoration:
+                                            task.isCompleted
+                                                ? TextDecoration.lineThrough
+                                                : TextDecoration.none,
+                                      ),
+                                    ),
+                                    // ... (rest of subtitle and trailing content is here)
+                                    subtitle: Text(
+                                      'Échéance: ${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year} à ${task.dueDate.hour.toString().padLeft(2, '0')}:${task.dueDate.minute.toString().padLeft(2, '0')}',
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        // 2. Delete Button
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.delete_forever,
+                                            color: Colors.grey,
+                                          ),
+                                          iconSize: 20.0,
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(
+                                            minWidth: 22,
+                                            minHeight: 28,
+                                          ),
+                                          onPressed:
+                                              () => tasksProvider.removeTask(
+                                                task,
+                                              ),
+                                        ),
 
-                                // 4. Checkbox (Reduced size, uses shrinkWrap to minimize tap target space)
-                                Transform.scale(
-                                  scale: 0.8, // Reduced checkbox size by 20%
-                                  child: Checkbox(
-                                    value: task.isCompleted,
-                                    onChanged: (_) {
-                                      tasksProvider.toggleTaskCompletion(task);
+                                        // 3. Remove from Today's List button
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.remove_circle,
+                                            color: Colors.red,
+                                          ),
+                                          iconSize: 20.0,
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(
+                                            minWidth: 22,
+                                            minHeight: 28,
+                                          ),
+                                          onPressed: () {
+                                            todayTasksProvider
+                                                .removeTaskFromToday(task);
+                                          },
+                                        ),
+
+                                        // 4. Checkbox
+                                        Transform.scale(
+                                          scale: 0.8,
+                                          child: Checkbox(
+                                            value: task.isCompleted,
+                                            onChanged: (_) {
+                                              tasksProvider
+                                                  .toggleTaskCompletion(task);
+                                            },
+                                            visualDensity:
+                                                VisualDensity.compact,
+                                            materialTapTargetSize:
+                                                MaterialTapTargetSize
+                                                    .shrinkWrap,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    onTap: () {
+                                      showTaskFormModal(
+                                        context,
+                                        initialCategory: task.category,
+                                        initialImportanceString:
+                                            task.isImportant,
+                                        initialUrgencyString: task.isUrgent,
+                                        taskToEdit: task,
+                                      );
                                     },
-                                    visualDensity: VisualDensity.compact,
-                                    // CRITICAL: Forces the Checkbox to take minimum size.
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
                                   ),
                                 ),
-                              ],
-                            ),
-                            onTap: () {
-                              showTaskFormModal(
-                                context,
-                                initialCategory: task.category,
-                                initialImportanceString: task.isImportant,
-                                initialUrgencyString: task.isUrgent,
-                                taskToEdit: task,
-                              );
-                            },
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
               );

@@ -19,6 +19,7 @@ class Tasks {
   final ImportanceLevel isImportant;
   final UrgencyLevel isUrgent;
   final ReminderValues reminderValue;
+  final DateTime? completedAt;
 
   Tasks({
     String? id,
@@ -30,6 +31,7 @@ class Tasks {
     required this.isImportant,
     required this.isUrgent,
     required this.reminderValue,
+    this.completedAt,
   }) : id = id ?? _uuid.v4();
 
   Map<String, dynamic> toJson() {
@@ -43,6 +45,7 @@ class Tasks {
       'isImportant': isImportant.name,
       'isUrgent': isUrgent.name,
       'reminderValue': reminderValue.name,
+      'completedAt': completedAt?.toIso8601String(),
     };
   }
 
@@ -80,6 +83,7 @@ class Tasks {
       isImportant: parseImportance(json['isImportant'] as String),
       isUrgent: parseUrgency(json['isUrgent'] as String),
       reminderValue: parseReminder(json['reminderValue'] as String),
+      completedAt: DateTime.parse(json['completedAt']),
     );
   }
 
@@ -211,6 +215,7 @@ class TasksProvider extends ChangeNotifier {
         isImportant: oldTask.isImportant,
         isUrgent: oldTask.isUrgent,
         reminderValue: oldTask.reminderValue,
+        completedAt: !oldTask.isCompleted ? DateTime.now() : null,
       );
       _tasks[index] = newTask;
 
@@ -218,7 +223,7 @@ class TasksProvider extends ChangeNotifier {
       if (newTask.isCompleted) {
         NotificationService.cancelNotification(newTask.id);
         // If archived, remove it from the list for today
-        _todayTasksProvider?.removeDeletedTask(newTask);
+        _todayTasksProvider?.updateTask(oldTask, newTask);
       } else {
         NotificationService.scheduleTaskReminder(newTask);
         // If unarchived, update the task instance in the list for today
@@ -272,5 +277,21 @@ class TasksProvider extends ChangeNotifier {
         _tasks.clear(); // Start clean
       }
     }
+  }
+
+  int getGlobalTaskCount(ImportanceLevel importance, UrgencyLevel urgency) {
+    // We use 'tasks' getter which already filters out completed tasks
+    return tasks
+        .where((t) => t.isImportant == importance && t.isUrgent == urgency)
+        .length;
+  }
+
+  // 2. Method to calculate overall completion rate (for Summary Stat)
+  Map<String, int> getCompletionStats() {
+    final total = _tasks.length;
+    final completed = _tasks.where((task) => task.isCompleted == true).length;
+    final todo = total - completed;
+
+    return {'total': total, 'completed': completed, 'todo': todo};
   }
 }

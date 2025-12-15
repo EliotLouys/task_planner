@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zbeub_task_plan/stats_page/stats_page.dart';
 import 'package:zbeub_task_plan/theme/app_theme.dart';
 import 'package:zbeub_task_plan/ui/selection_page/selection_page.dart';
 import 'package:zbeub_task_plan/ui/settings_page/settings_page.dart';
@@ -22,6 +23,13 @@ class _MyHomePageState extends State<MyHomePage> {
         // AppBar style is now managed by AppTheme
         title: Text(widget.title),
         actions: [
+          IconButton(
+            // <--- Add this button
+            icon: const Icon(Icons.analytics_outlined),
+            onPressed: () {
+              Navigator.of(context).push(StatsPage.route());
+            },
+          ),
           IconButton(
             onPressed: () {
               Navigator.push(context, SettingsPage.route());
