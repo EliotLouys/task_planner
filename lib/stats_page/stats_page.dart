@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -263,8 +265,9 @@ class StatsPage extends StatelessWidget {
     }
 
     final totalActive = provider.tasks.length;
-    if (totalActive == 0)
+    if (totalActive == 0) {
       return const Center(child: Text("Pas de tâches actives."));
+    }
 
     return PieChart(
       PieChartData(

@@ -42,9 +42,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: tasksProvider),
-        ChangeNotifierProvider.value(
-          value: todayTasksProvider,
-        ), // Provide new provider
+        ChangeNotifierProvider.value(value: todayTasksProvider),
         ChangeNotifierProvider.value(value: settingsProvider),
       ],
       child: const MyApp(),

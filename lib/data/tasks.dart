@@ -83,7 +83,10 @@ class Tasks {
       isImportant: parseImportance(json['isImportant'] as String),
       isUrgent: parseUrgency(json['isUrgent'] as String),
       reminderValue: parseReminder(json['reminderValue'] as String),
-      completedAt: DateTime.parse(json['completedAt']),
+      completedAt:
+          json['completedAt'] != null
+              ? DateTime.parse(json['completedAt'])
+              : null,
     );
   }
 

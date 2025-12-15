@@ -30,21 +30,21 @@ class _TodayTasksPageState extends State<TodayTasksPage> {
     required String taskId,
     required Future<void> Function() onAction,
   }) async {
-    // A. Mark as animating (triggers the visual shrink)
-    setState(() {
-      _animatingTaskIds.add(taskId);
-    });
+    // A. Visual Animation ONLY
+    if (mounted) {
+      setState(() {
+        _animatingTaskIds.add(taskId);
+      });
+    }
 
-    // B. Wait for your animation duration (1500ms as per your code)
+    // B. Wait
     await Future.delayed(const Duration(milliseconds: 1500));
 
-    // Check if user left the screen
-    if (!mounted) return;
-
-    // C. ACTUAL Data Update (Provider)
+    // C. CRITICAL: Run Data Update REGARDLESS of mounted state
+    // (This saves to DB even if user closed the screen)
     await onAction();
 
-    // D. Cleanup (though the item is likely gone from the list now)
+    // D. Cleanup (Visuals only)
     if (mounted) {
       setState(() {
         _animatingTaskIds.remove(taskId);
