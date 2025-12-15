@@ -83,18 +83,6 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               child: const Text("Archives", textAlign: TextAlign.center),
             ),
-
-            ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('COUCOULOLELELELE'),
-                    duration: Duration(seconds: 5),
-                  ),
-                );
-              },
-              child: const Text("HELLO LOL"),
-            ),
           ],
         ),
       ),

@@ -79,7 +79,7 @@ class TodayTasksPage extends StatelessWidget {
                       ),
 
                       Expanded(
-                        child: ReorderableDragStartListener(
+                        child: ReorderableDelayedDragStartListener(
                           index: index, // Pass the current list index
                           child: ListTile(
                             isThreeLine: true,
