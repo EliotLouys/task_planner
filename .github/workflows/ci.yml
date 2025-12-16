@@ -18,21 +18,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      # 2. Use the official Flutter setup action (Replaces 3 manual steps)
+      # 2. Use the official Flutter setup action
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          # Use a newer stable version compatible with your pubspec.yaml constraints
-          # Using 'stable' is usually best, or target the latest version in the 3.35.0+ range.
-          flutter-version: "3.38.x" # Targeting Flutter 3.38 or later
+          flutter-version: "3.38.x"
           channel: "stable"
           cache: true
 
-      # 3. Setup JDK for Android builds (Crucial for Gradle)
+      # 3. Setup JDK
       - name: Setup Java/JDK
         uses: actions/setup-java@v3
         with:
-          java-version: "17" # JDK 17 is standard for recent Flutter/Android
+          java-version: "17"
           distribution: "temurin"
 
       - name: Decode Keystore for Release
@@ -41,15 +39,15 @@ jobs:
           echo "${{ secrets.SIGNING_KEY_BASE64 }}" | base64 --decode > android/app/app_release.jks
         shell: bash
 
-      # 4. Flutter doctor (Optional, for verification)
+      # 4. Flutter doctor
       - name: Flutter doctor
         run: flutter doctor -v
 
-      # 5. Get dependencies (Your original step 5)
+      # 5. Get dependencies
       - name: Install Flutter packages
         run: flutter pub get
 
-      # 6. Build release APK (Your original step 6)
+      # 6. Build release APK
       - name: Build APK
         run: flutter build apk --release
         env:
@@ -58,17 +56,28 @@ jobs:
           RELEASE_STORE_FILE: app_release.jks
           RELEASE_STORE_PASSWORD: password
 
-      # 7. Upload artifact (Your original step 7)
+      # --- NEW STEP: Rename the APK using the Tag Name ---
+      - name: Rename APK
+        run: |
+          # Define the path to Flutter's default output
+          APK_DIR="build/app/outputs/flutter-apk"
+
+          # Rename app-release.apk to app-v1.0.0.apk (or whatever the tag is)
+          mv "$APK_DIR/app-release.apk" "$APK_DIR/app-${{ github.ref_name }}.apk"
+
+      # 7. Upload artifact (Updated path)
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: build/app/outputs/flutter-apk/*.apk
+          # Points to the new filename
+          path: build/app/outputs/flutter-apk/app-${{ github.ref_name }}.apk
 
-      # 8. Create GitHub Release (Your original step 8)
+      # 8. Create GitHub Release (Updated path)
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: build/app/outputs/flutter-apk/*.apk
+          # Points to the new filename
+          files: build/app/outputs/flutter-apk/app-${{ github.ref_name }}.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
