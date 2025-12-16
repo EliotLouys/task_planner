@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -199,14 +201,18 @@ class NotificationService {
 
   // Utility for getting the notification details (channel config)
   static NotificationDetails _notificationDetails() {
-    const androidPlatformChannelSpecifics = AndroidNotificationDetails(
+    final vibrationPattern = Int64List.fromList([0, 1000, 500, 2000]);
+
+    final androidPlatformChannelSpecifics = AndroidNotificationDetails(
       _channelId,
       _channelName,
       channelDescription: _channelDescription,
+      enableVibration: true,
+      vibrationPattern: vibrationPattern,
       importance: Importance.max,
       priority: Priority.high,
       ticker: 'ticker',
     );
-    return const NotificationDetails(android: androidPlatformChannelSpecifics);
+    return NotificationDetails(android: androidPlatformChannelSpecifics);
   }
 }
