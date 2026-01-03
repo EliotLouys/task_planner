@@ -105,8 +105,10 @@ class StatsPage extends StatelessWidget {
     BuildContext context,
     TodayTasksProvider todayProvider,
   ) {
-    final tasks = todayProvider.tasksForToday;
-    if (tasks.isEmpty) {
+    final total = todayProvider.totalTodayCount;
+    final completed = todayProvider.completedTodayCount;
+
+    if (total == 0) {
       return const Card(
         child: Padding(
           padding: EdgeInsets.all(24.0),
@@ -118,10 +120,7 @@ class StatsPage extends StatelessWidget {
       );
     }
 
-    final total = tasks.length;
-    final completed = tasks.where((t) => t.isCompleted).length;
     final progress = total == 0 ? 0.0 : completed / total;
-
     return Card(
       elevation: 2,
       child: Padding(

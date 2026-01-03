@@ -6,7 +6,6 @@ import 'package:zbeub_task_plan/data/tasks.dart';
 import 'package:zbeub_task_plan/theme/app_theme.dart';
 import 'package:zbeub_task_plan/ui/forms/task_form.dart';
 
-// 1. Convert to StatefulWidget to handle the "Animation Delay" state
 class TodayTasksPage extends StatefulWidget {
   const TodayTasksPage({super.key});
 
@@ -22,29 +21,27 @@ class TodayTasksPage extends StatefulWidget {
 }
 
 class _TodayTasksPageState extends State<TodayTasksPage> {
-  // 2. We keep track of tasks that are currently "animating out"
   final Set<String> _animatingTaskIds = {};
 
-  // Helper function to handle the delay
   Future<void> _handleTaskActionWithDelay({
     required String taskId,
     required Future<void> Function() onAction,
   }) async {
-    // A. Visual Animation ONLY
+    // 1. Start Visual Animation
     if (mounted) {
       setState(() {
         _animatingTaskIds.add(taskId);
       });
     }
 
-    // B. Wait
+    // 2. Wait for animation to play (shrink/fade)
     await Future.delayed(const Duration(milliseconds: 1500));
 
-    // C. CRITICAL: Run Data Update REGARDLESS of mounted state
-    // (This saves to DB even if user closed the screen)
+    // 3. Update Data
+    // This will trigger TodayTasksProvider.updateTask(), removing the task.
     await onAction();
 
-    // D. Cleanup (Visuals only)
+    // 4. Cleanup
     if (mounted) {
       setState(() {
         _animatingTaskIds.remove(taskId);
@@ -60,9 +57,7 @@ class _TodayTasksPageState extends State<TodayTasksPage> {
         builder: (context, todayTasksProvider, tasksProvider, child) {
           final tasks = todayTasksProvider.tasksForToday;
 
-          // 3. LOGIC FIX:
-          // We only show the Empty Message if the list is empty AND nothing is currently animating.
-          // This keeps the ListView alive while the last item shrinks.
+          // Check if list is effectively empty (considering animations)
           final activeTasksCount =
               tasks.where((element) => !element.isCompleted).length;
           final isTrulyEmpty =
@@ -95,8 +90,10 @@ class _TodayTasksPageState extends State<TodayTasksPage> {
               final task = tasks[index];
               final categoryColor = AppTheme.getCategoryColor(task.category);
 
-              // 4. CHECK BOTH: Is it completed in data? OR is it currently animating out?
+              // Determine if task is completed or currently animating out
               final bool isAnimating = _animatingTaskIds.contains(task.id);
+              // Note: task.isCompleted will likely be false here until the animation
+              // finishes and it gets removed, but we check both just in case.
               final bool isCompleted = task.isCompleted || isAnimating;
 
               const double cardHeight = 100.0;
@@ -158,53 +155,22 @@ class _TodayTasksPageState extends State<TodayTasksPage> {
                                     ),
                                   ),
                                   subtitle: Text(
-                                    'Échéance: ${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year} à ${task.dueDate.hour.toString().padLeft(2, '0')}:${task.dueDate.minute.toString().padLeft(2, '0')}',
+                                    'Échéance: ${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year}',
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(fontSize: 14),
                                   ),
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      // DELETE BUTTON
-                                      IconButton(
-                                        icon: const Icon(
-                                          Icons.delete_forever,
-                                          color: Colors.grey,
-                                        ),
-                                        iconSize: 20.0,
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(
-                                          minWidth: 22,
-                                          minHeight: 28,
-                                        ),
-                                        onPressed: () {
-                                          // Trigger delay before deleting
-                                          _handleTaskActionWithDelay(
-                                            taskId: task.id,
-                                            onAction:
-                                                () async => tasksProvider
-                                                    .removeTask(task),
-                                          );
-                                        },
-                                      ),
-                                      // REMOVE FROM TODAY BUTTON
+                                      // REMOVE FROM TODAY BUTTON (Still useful if you just want to remove without completing)
                                       IconButton(
                                         icon: const Icon(
                                           Icons.remove_circle,
                                           color: Colors.red,
                                         ),
                                         iconSize: 20.0,
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(
-                                          minWidth: 22,
-                                          minHeight: 28,
-                                        ),
                                         onPressed: () {
-                                          // Trigger delay before removing
                                           _handleTaskActionWithDelay(
                                             taskId: task.id,
                                             onAction:
@@ -217,10 +183,10 @@ class _TodayTasksPageState extends State<TodayTasksPage> {
                                       Transform.scale(
                                         scale: 0.8,
                                         child: Checkbox(
-                                          value:
-                                              isCompleted, // Use our combined bool
+                                          value: isCompleted,
                                           onChanged: (_) {
-                                            // Trigger delay before toggling completion
+                                            // This starts the animation, then calls toggle.
+                                            // Toggle calls updateTask, which now removes the task.
                                             _handleTaskActionWithDelay(
                                               taskId: task.id,
                                               onAction:
@@ -230,9 +196,6 @@ class _TodayTasksPageState extends State<TodayTasksPage> {
                                                       ),
                                             );
                                           },
-                                          visualDensity: VisualDensity.compact,
-                                          materialTapTargetSize:
-                                              MaterialTapTargetSize.shrinkWrap,
                                         ),
                                       ),
                                     ],

@@ -1,39 +1,43 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // ADDED
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:zbeub_task_plan/data/settings.dart';
 import 'package:zbeub_task_plan/data/tasks.dart';
-import 'dart:convert'; // ADDED
+import 'dart:convert';
 
 class TodayTasksProvider extends ChangeNotifier {
   final List<Tasks> _tasksForToday = [];
-  final _storage = FlutterSecureStorage(); // ADDED Storage instance
+  final _storage = FlutterSecureStorage();
 
-  // Dependency on TasksProvider to lookup full task objects
   TasksProvider? _tasksProvider;
-  SettingsProvider? _settingsProvider; // <--- NEW DEPENDENCY
+  SettingsProvider? _settingsProvider;
+
+  // Stats accumulator for tasks cleared today
+  int _archivedCompletedCount = 0;
 
   void setTasksProvider(TasksProvider provider) {
     _tasksProvider = provider;
   }
 
-  // Setter for the SettingsProvider
   void setSettingsProvider(SettingsProvider provider) {
     _settingsProvider = provider;
   }
 
-
-
-  int get maxTasks =>
-      _settingsProvider?.maxTasksForToday ?? 5; // Default safety fallback to 5
+  int get maxTasks => _settingsProvider?.maxTasksForToday ?? 5;
 
   List<Tasks> get tasksForToday => List.unmodifiable(_tasksForToday);
+
+  // --- Stats Getters (Active + Archived) ---
+  int get totalTodayCount => _tasksForToday.length + _archivedCompletedCount;
+
+  int get completedTodayCount =>
+      _tasksForToday.where((t) => t.isCompleted).length +
+      _archivedCompletedCount;
 
   int _findIndexById(Tasks task) {
     return _tasksForToday.indexWhere((t) => t.id == task.id);
   }
 
   void reorderTasks(int oldIndex, int newIndex) {
-    // Standard logic for Dart List reorder: if moving down, decrement newIndex by 1
     if (oldIndex < newIndex) {
       newIndex -= 1;
     }
@@ -44,37 +48,89 @@ class TodayTasksProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ADDED: Save task IDs instead of full task objects
   Future<void> _saveTasksForToday() async {
     final taskIds = _tasksForToday.map((t) => t.id).toList();
     final tasksString = jsonEncode(taskIds);
     await _storage.write(key: 'today_tasks', value: tasksString);
   }
 
-  // ADDED: Load task IDs and look up full task objects from main list
+  // Save the counter of cleared tasks
+  Future<void> _saveArchivedStats() async {
+    final data = {
+      'date': DateTime.now().toIso8601String(),
+      'count': _archivedCompletedCount,
+    };
+    await _storage.write(key: 'today_stats_archive', value: jsonEncode(data));
+  }
+
   Future<void> loadTasksForToday() async {
+    // 1. Load active list
     final tasksString = await _storage.read(key: 'today_tasks');
     if (tasksString != null && _tasksProvider != null) {
       final List<dynamic> tasksIdJson =
           jsonDecode(tasksString) as List<dynamic>;
       _tasksForToday.clear();
 
-      // Look up the full Tasks object in the main TasksProvider for each ID
       for (final id in tasksIdJson) {
         final task = _tasksProvider!.getTaskById(id as String);
         if (task != null) {
           _tasksForToday.add(task);
         }
       }
+    }
+
+    // 2. Load archived stats and ensure they are for "today"
+    final statsString = await _storage.read(key: 'today_stats_archive');
+    if (statsString != null) {
+      try {
+        final data = jsonDecode(statsString);
+        final savedDate = DateTime.parse(data['date']);
+        final now = DateTime.now();
+
+        if (savedDate.year == now.year &&
+            savedDate.month == now.month &&
+            savedDate.day == now.day) {
+          _archivedCompletedCount = data['count'] as int;
+        } else {
+          _archivedCompletedCount = 0;
+          await _storage.delete(key: 'today_stats_archive');
+        }
+      } catch (e) {
+        _archivedCompletedCount = 0;
+      }
+    }
+
+    notifyListeners();
+  }
+
+  // --- UPDATED: Auto-Archive Logic ---
+  void updateTask(Tasks oldTask, Tasks newTask) {
+    final index = _findIndexById(oldTask);
+    if (index != -1) {
+      // If the task is now completed, we remove it from the list
+      // and increment our stats counter.
+      if (newTask.isCompleted && !oldTask.isCompleted) {
+        _tasksForToday.removeAt(index);
+        _archivedCompletedCount++;
+        _saveArchivedStats();
+      } else if (!newTask.isCompleted && oldTask.isCompleted) {
+        // Edge case: If a task was somehow completed in the list (not archived)
+        // and is now uncompleted, we just update it.
+        _tasksForToday[index] = newTask;
+      } else {
+        // Standard update (Title change, etc.)
+        _tasksForToday[index] = newTask;
+      }
+
+      _saveTasksForToday();
       notifyListeners();
     }
   }
 
   bool addTaskToToday(Tasks task, int maxLimit) {
-
     if (_tasksForToday.length < maxLimit && _findIndexById(task) == -1) {
       _tasksForToday.add(task);
-      _saveTasksForToday(); // Call save on mutation
+      _saveTasksForToday();
       notifyListeners();
       return true;
     }
@@ -85,7 +141,7 @@ class TodayTasksProvider extends ChangeNotifier {
     final index = _findIndexById(task);
     if (index != -1) {
       _tasksForToday.removeAt(index);
-      _saveTasksForToday(); // Call save on mutation
+      _saveTasksForToday();
       notifyListeners();
     }
   }
@@ -96,7 +152,7 @@ class TodayTasksProvider extends ChangeNotifier {
       removeTaskFromToday(task);
       return false;
     } else {
-      final success = addTaskToToday(task,maxLimit);
+      final success = addTaskToToday(task, maxLimit);
       return success;
     }
   }
@@ -105,20 +161,11 @@ class TodayTasksProvider extends ChangeNotifier {
     return _findIndexById(task) != -1;
   }
 
-  void updateTask(Tasks oldTask, Tasks newTask) {
-    final index = _findIndexById(oldTask);
-    if (index != -1) {
-      _tasksForToday[index] = newTask;
-      _saveTasksForToday(); // Call save on mutation
-      notifyListeners();
-    }
-  }
-
   void removeDeletedTask(Tasks task) {
     final index = _findIndexById(task);
     if (index != -1) {
       _tasksForToday.removeAt(index);
-      _saveTasksForToday(); // Call save on mutation
+      _saveTasksForToday();
       notifyListeners();
     }
   }
